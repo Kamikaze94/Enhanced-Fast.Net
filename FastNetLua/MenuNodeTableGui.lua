@@ -676,7 +676,7 @@ function MenuNodeTableGui:mouse_pressed(button, x, y)
 end
 
 function MenuNodeTableGui:key_press(o, k)
-	if managers.menu_component and not managers.menu_component:crimenet_enabled() then return end
+	if managers.menu_component and managers.menu_component.crimenet_enabled and not managers.menu_component:crimenet_enabled() then return end
 	
 	local reconnect_key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
 	local type = managers.controller:get_default_wrapper_type()

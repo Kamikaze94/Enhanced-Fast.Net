@@ -11,6 +11,7 @@
 		{ "hook_id" : "lib/managers/menu/menunodegui", "script_path" : "FastNetCore.lua" },
 		{ "hook_id" : "lib/network/matchmaking/networkmatchmakingsteam", "script_path" : "FastNetCore.lua" },
 		{ "hook_id" : "lib/managers/menu/crimenetfiltersgui", "script_path" : "FastNetCore.lua" },
-		{ "hook_id" : "lib/managers/crimenetmanager", "script_path" : "FastNetCore.lua" }
+		{ "hook_id" : "lib/managers/crimenetmanager", "script_path" : "FastNetCore.lua" },
+		{ "hook_id" : "lib/managers/menu/menucomponentmanager", "script_path" : "FastNetCore.lua" }
 	]
 }
