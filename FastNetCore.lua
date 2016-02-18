@@ -109,36 +109,17 @@ if Hooks then
 		
 		local callback_handler = CoreSerialize.string_to_classtable("MenuCallbackHandler")
 		nodes[FastNet.fastnetmenu]:set_callback_handler(callback_handler:new())
-		
-		local parent_menu
-		local menu_position
-		
+
 		if nodes.main then
-			parent_menu = nodes.main
-		end
-		if parent_menu then
+			local parent_menu = nodes.main
+			local menu_position = 1
 			for k, v in pairs( parent_menu._items ) do
 				if "crimenet" == v["_parameters"]["name"] then
 					menu_position = k + 1
 					break
 				end
 			end
---[[			
-			local data = {
-				type = "CoreMenuItem.Item",
-			}
-			local params = {
-				name = "fast_net_friends",
-				text_id = "fast_net_friends_title",
-				--help_id = "fast_net_help",
-				callback = "find_online_games_with_friends",
-				next_node = FastNet.fastnetmenu,
-			}
-			local new_item = parent_menu:create_item(data, params)
-			parent_menu:add_item(new_item)
-			local element = table.remove(parent_menu._items, table.maxn(parent_menu._items))
-			table.insert( parent_menu._items, menu_position, element )
-]]			
+	
 			local data = {
 				type = "CoreMenuItem.Item",
 			}
