@@ -6,7 +6,7 @@ It started with the background panels, because the list was very hard to read wi
 
 ![Screenshot Preview](http://www.imghost.eu/images/2016/02/18/EnhancedFast.Net.jpg)
 
-###It includes:
+###Included Mods:
 - __FastNet Standalone__, made by _Big Bushy Beard_, modified by me
 	- Removed filters from the Serverlist
 	- Added Background panels to different parts of the UI
