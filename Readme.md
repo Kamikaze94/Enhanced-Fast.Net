@@ -8,10 +8,10 @@ It started with the background panels, because the list was very hard to read wi
 
 ###Installation:
    Simply drag and drop the Contents of the downloaded archive into your mods-folder, and you are good to go.  
-   __(You need the BLT Hook for this mod to work)__
+   __(You need the [BLT Hook](http://paydaymods.com/download/) for this mod to work)__
 
 ###Included Mods:
-- __FastNet Standalone__, made by _Big Bushy Beard_, modified by me
+- __[FastNet Standalone](http://paydaymods.com/mods/79/fastnetstand)__, made by _Big Bushy Beard_, modified by me
 	- Removed filters from the Serverlist
 	- Added Background panels to different parts of the UI
 	- Made labels on the left side permanent
@@ -20,9 +20,9 @@ It started with the background panels, because the list was very hard to read wi
 	- Added marking of friends lobbies in the serverlist
 	- Added advanced difficulty filters, for Hard+ to Overkill+
 	- Added option to display 50 servers at once
-- __Persistent Filter Settings__, made by _Seven_
+- __[Persistent Filter Settings](https://steamcommunity.com/app/218620/discussions/15/46476691291148659/)__, made by _Seven_
 	- Updated to load advanced filter settings correctly
-- __Reconnect to Server__, made by _Luffy_
+- __[Reconnect to Server](http://forums.lastbullet.net/mydownloads.php?action=view_down&did=13546)__, made by _Luffy_
 	- Could causes issues, if you have the standalone version installed too...  
 	  (Can also work well, but don't say I didn't warn you  :P)
 
