@@ -153,7 +153,11 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 		if not FastNet.settings.save_filter then return end
 		local f = "friends_only=" .. tostring(self._search_friends_only or false) .. ", max_lobbies=" .. tostring(self._lobby_return_count) .. ", distance=" .. tostring(self._distance_filter)
 		for k, v in pairs(self._lobby_filters) do
-			f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value))
+			if tostring(k) == "difficulty" then
+				f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value + (self._lobby_filters[k].comparision_type == "equal" and 0 or 4)))
+			else
+				f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value))
+			end
 		end
 		FastNet.settings.filter = f
 		FastNet:Save()
@@ -174,6 +178,13 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 					self:set_lobby_return_count(tonumber(val))
 				elseif key == "distance" then
 					self:set_distance_filter(tonumber(val))
+				elseif key == "difficulty" then
+					local comp = "equal"
+					if tonumber(val) > 6 then
+						comp = "equalto_or_greater_than"
+						val = tonumber(val) - 4
+					end
+					self:add_lobby_filter(key, tonumber(val), comp)
 				else
 					self:add_lobby_filter(key, tonumber(val), "equal")
 				end
@@ -189,89 +200,3 @@ elseif string.lower(RequiredScript) == "lib/managers/menu/menucomponentmanager" 
 		end
 	end
 end
---[[if string.lower(RequiredScript) == "lib/managers/menumanager" then
-	local crimenetfilters_addfilter = MenuSTEAMHostBrowser.add_filter
-	function MenuSTEAMHostBrowser:add_filter(node)
-		crimenetfilters_addfilter(self, node)
-		
-		local params = {
-			name = "difficulty_filter",
-			text_id = "menu_diff_filter",
-			help_id = "menu_diff_filter_help",
-			visible_callback = "is_pc_controller",
-			callback = "choice_difficulty_filter",
-			filter = true
-		}
-		local data_node = {
-			type = "MenuItemMultiChoice",
-			{
-				_meta = "option",
-				text_id = "menu_all",
-				value = 0
-			},
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_easy",
-				value = 1
-			},
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_normal",
-				value = 2
-			},
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_hard",
-				value = 3
-			},
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_overkill",
-				value = 4
-			}
-		}
-		if managers.experience:current_level() >= 145 then
-			table.insert(data_node, {
-				_meta = "option",
-				text_id = "menu_difficulty_overkill_145",
-				value = 5
-			})
-		end
-		table.insert(data_node, 
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_easy_plus",
-				value = 1
-			},
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_normal_plus",
-				value = 2
-			},
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_hard_plus",
-				value = 3
-			},
-			{
-				_meta = "option",
-				text_id = "menu_difficulty_overkill_plus",
-				value = 4
-			}
-		)
-		local new_item = node:create_item(data_node, params)
-		new_item:set_value(managers.network.matchmake:difficulty_filter())
-		node:item("difficulty_filter") = new_item
-	end
-
-	local clbk_choice_difficulty_filter = MenuCallbackHandler.choice_difficulty_filter
-	function MenuCallbackHandler:choice_difficulty_filter(item)
-		local diff_filter = item:value()
-		clbk_choice_difficulty_filter(self, item)
-		if item:value() > 5 then
-			managers.network.matchmake:add_lobby_filter("difficulty", diff_filter % 5, "equal"to_or_greater_than)
-		else
-			managers.network.matchmake:add_lobby_filter("difficulty", diff_filter, "equal")
-		end
-	end
-end]]
