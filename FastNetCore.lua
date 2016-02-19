@@ -66,9 +66,6 @@ if Hooks then
 			["fast_net_title"] = "Fast.net",
 			["fast_net_help"] = "Log into Fast.net and join others faster than light.",
 			["menu_button_reconnect"] = "Reconnect",
-			["menu_difficulty_hard_plus"] = "Hard +",
-			["menu_difficulty_very_hard_plus"] = "Very Hard +",
-			["menu_difficulty_overkill_plus"] = "Overkill +",
 		})
 	end)
 	 
