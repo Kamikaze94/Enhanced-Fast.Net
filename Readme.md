@@ -27,6 +27,7 @@ It started with the background panels, because the list was very hard to read wi
 	  (Can also work well, but don't say I didn't warn you  :P)
 
 ###TODO:
-- Add aditional filter options
-- Remove crimenet Map from the importet crimenet UIs
+- ~~Add aditional filter options~~ DONE!
+- ~~Remove crimenet Map from the importet crimenet UIs~~
+	- Probably not worth it, given I would need to detect, wether the UI was called through CrimeNet or FastNet and replace the fullscreen_ws in 'lib/managers/menu/...' for the second case
 - Restructure the way, the reconnect script is implemented
