@@ -1,44 +1,3 @@
-_G.Reconnect = _G.Reconnect or {}
-local lobby_id = nil
-local C = LuaModManager.Constants
-LuaModManager.Constants._keybinds_menu_id = "base_keybinds_menu"
-local keybinds_menu_id = C._keybinds_menu_id
-function Reconnect:Save()
-	FastNet.settings.last_lobby_id = lobby_id
-	FastNet:Save()
-end
-
-function Reconnect:Load()
-	FastNet:Load()
-	lobby_id = FastNet.settings.last_lobby_id or nil
-end
-
-function Reconnect:reconnect()
-	Reconnect:Load()
-	if lobby_id then
-		managers.network.matchmake:join_server(lobby_id)
-	else
-		managers.menu:show_failed_joining_dialog()
-	end
-end
-
-Reconnect:Load()
-Hooks:Add("MenuManager_Base_SetupModOptionsMenu", "ReconnectOptions", function( menu_manager, nodes )
-		MenuHelper:NewMenu( keybinds_menu_id )
-end)
-Hooks:Add("MenuManager_Base_PopulateModOptionsMenu", "ReconnectOptions", function( menu_manager, nodes )
-		local key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
-		MenuHelper:AddKeybinding({
-			id = "Reconnect_key",
-			title = "Reconnect key",
-			connection_name = "Reconnect_key",
-			button = key,
-			binding = key,
-			menu_id = keybinds_menu_id,
-			localized = false,
-		})
-end)
-
 if RequiredScript == "lib/managers/crimenetmanager" then
 
 	Hooks:PostHook(CrimeNetGui, "init", "reinit", function(self, ws, fullscreeen_ws, node)
@@ -63,7 +22,7 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 	function CrimeNetGui:key_press(o, k)
 		key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
 		if k == Idstring(key) and self._panel:child("reconnect_button") then
-			Reconnect:reconnect()
+			FastNet:reconnect()
 		end
 	end
 	Hooks:PostHook(CrimeNetGui, "mouse_moved", "mouse_move", function(self, o, x, y)
@@ -83,7 +42,7 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 
 	Hooks:PostHook(CrimeNetGui, "mouse_pressed", "mouse_presse", function(self, o, button, x, y)
 		if self._panel:child("reconnect_button") and self._panel:child("reconnect_button"):inside(x, y) then
-			Reconnect:reconnect()    
+			FastNet:reconnect()    
 			return
 		end
 	end)
@@ -117,9 +76,9 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 			local server_ok, ok_error = self:is_server_ok(nil, room_id, attributes, is_invite)
 			if server_ok then
 				self:join_server(room_id, true)
-				lobby_id = room_id
-				Reconnect:Save()
-				log("Saving(Room ID = "..lobby_id..")")
+				FastNet.settings.last_lobby_id = room_id
+				FastNet:Save()
+				log("[FastNet] Saving(Room ID = "..room_id..")")
 			else
 				managers.system_menu:close("join_server")
 				if ok_error == 1 then
@@ -174,6 +133,10 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 					local friends_only = val  == "true" and true or false
 					Global.game_settings.search_friends_only = friends_only
 					self._search_friends_only = friends_only
+				elseif key == "appropriate_jobs" then
+					local appropriate_jobs = val  == "true" and true or false
+					Global.game_settings.search_appropriate_jobs = appropriate_jobs
+					self._search_appropriate_jobs = appropriate_jobs
 				elseif key == "max_lobbies" then
 					self:set_lobby_return_count(tonumber(val))
 				elseif key == "distance" then
@@ -197,6 +160,16 @@ elseif string.lower(RequiredScript) == "lib/managers/menu/menucomponentmanager" 
 			return self._crimenet_gui:enabled()
 		else
 			return true
+		end
+	end
+elseif string.lower(RequiredScript) == "lib/network/base/hostnetworksession" then
+	local chk_server_joinable_state_actual = HostNetworkSession.chk_server_joinable_state
+	function HostNetworkSession:chk_server_joinable_state(...)
+		chk_server_joinable_state_actual(self, ...)
+
+		if Global.load_start_menu_lobby and MenuCallbackHandler ~= nil then
+			MenuCallbackHandler:update_matchmake_attributes()
+			MenuCallbackHandler:_on_host_setting_updated()
 		end
 	end
 end

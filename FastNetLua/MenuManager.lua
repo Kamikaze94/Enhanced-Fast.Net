@@ -8,7 +8,7 @@ function MenuCallbackHandler:_find_online_games(friends_only)
 			managers.menu:active_menu().logic:refresh_node(FastNet.fastnetmenu, true, info, friends_only)
 		end
 		managers.network.matchmake:register_callback("search_lobby", f)
-		--managers.network.matchmake:set_lobby_return_count(150)
+		managers.network.matchmake:set_lobby_return_count(100)
 		managers.menu:show_retrieving_servers_dialog()
 		managers.network.matchmake:search_lobby(friends_only)
 		local usrs_f = function(success, amount)

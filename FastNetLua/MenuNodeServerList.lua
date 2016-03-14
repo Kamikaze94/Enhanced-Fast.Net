@@ -25,4 +25,3 @@ function MenuNodeServerList:_setup_columns()
 		align = "center"
 	})
 end
-log("server list")

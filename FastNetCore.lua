@@ -3,6 +3,7 @@ if not _G.FastNet then
 	FastNet.mod_path = ModPath
 	FastNet.save_path = SavePath .. "FastNet.txt"
 	FastNet.fastnetmenu = "play_STEAM_online"
+	FastNet.keybinds_menu = "base_keybinds_menu"
 	FastNet.settings = {
 		save_filter = true,
 		filter = "",
@@ -11,9 +12,6 @@ if not _G.FastNet then
 	}
 end
 
-FastNet.dofiles = {
-}
-
 FastNet.hook_files = {
 	["lib/managers/menu/renderers/menunodetablegui"] = "FastNetLua/MenuNodeTableGui.lua",
 	["lib/managers/menu/nodes/menunodeserverlist"] = "FastNetLua/MenuNodeServerList.lua",
@@ -21,15 +19,12 @@ FastNet.hook_files = {
 	["lib/managers/menumanager"] = "FastNetLua/MenuManager.lua",
 	["lib/network/matchmaking/networkmatchmakingsteam"] = "Scripts.lua",
 	["lib/managers/menu/crimenetfiltersgui"] = "Scripts.lua",
-	["lib/managers/crimenetmanager"] = "Scripts.lua",
-	["lib/managers/menu/menucomponentmanager"] = "Scripts.lua"
+	["lib/managers/menu/menucomponentmanager"] = "Scripts.lua",
+	["lib/network/base/hostnetworksession"] = "Scripts.lua",
+	["lib/managers/crimenetmanager"] = "Scripts.lua"
 }
 
-if not FastNet.setup then
-	for p, d in pairs(FastNet.dofiles) do
-		dofile(ModPath .. d)
-	end
-	
+if not FastNet.setup then	
 	function FastNet:Load()
 		local file = io.open(self.save_path, "r")
 		if file then
@@ -48,6 +43,16 @@ if not FastNet.setup then
 		end
 	end
 	
+	function FastNet:reconnect()
+		FastNet:Load()
+		local lobby_id = FastNet.settings.last_lobby_id or nil
+		if lobby_id then
+			managers.network.matchmake:join_server(lobby_id)
+		else
+			managers.menu:show_failed_joining_dialog()
+		end
+	end
+	
 	FastNet:Load()
 	FastNet.setup = true
 end
@@ -62,7 +67,7 @@ end
 
 if Hooks then
 	Hooks:Add("LocalizationManagerPostInit", "FastNet_Localization", function(loc)
-		LocalizationManager:add_localized_strings({
+		loc:add_localized_strings({
 			["fast_net_title"] = "Fast.net",
 			["fast_net_help"] = "Log into Fast.net and join others faster than light.",
 			["menu_button_reconnect"] = "Reconnect",
@@ -71,25 +76,26 @@ if Hooks then
 	 
 	Hooks:Add("MenuManagerSetupCustomMenus", "FastNetSetupMenu", function( menu_manager, nodes )
 		MenuHelper:NewMenu( FastNet.fastnetmenu )
+		MenuHelper:NewMenu( FastNet.keybinds_menu )
 	end)
 	 
 	Hooks:Add("MenuManagerBuildCustomMenus", "Base_BuildFastNetMenu", function( menu_manager, nodes )
+		local key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
+		MenuHelper:AddKeybinding({
+			id = "Reconnect_key",
+			title = "Reconnect Key",
+			connection_name = "Reconnect_key",
+			button = key,
+			binding = key,
+			menu_id = FastNet.keybinds_menu,
+			localized = false,
+		})
 		
 		local arugements = {
 			_meta = "node",
---[[			[1] = {
-				_meta = "legend",
-				name = "menu_cn_filter",--"menu_legend_update",
-				pc = true
-		    },]]
 		    --align_line = 0.5,
 		    back_callback = "stop_multiplayer",
 		    gui_class = "MenuNodeTableGui",
---[[		    legend = {
-				_meta = "legend",
-				name = "menu_cn_filter",
-				pc = true
-		    },]]
 		    menu_components = "",
 		    modifier = "MenuSTEAMHostBrowser",
 		    name = FastNet.fastnetmenu,

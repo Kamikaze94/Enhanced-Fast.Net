@@ -78,9 +78,6 @@ end
 
 function MenuNodeTableGui:_setup_panels(node)
 	MenuNodeTableGui.super._setup_panels(self, node)
-	if self._fastnet_enabled == nil then
-		self._fastnet_enabled = true
-	end
 	
 	local bg = HUDBGBox_create(self.safe_rect_panel, { w = self.safe_rect_panel:w() - self._info_bg_rect:w() - tweak_data.menu.info_padding, h = self.safe_rect_panel:h()})
 	bg:set_left(self._info_bg_rect:right() + tweak_data.menu.info_padding)
@@ -187,15 +184,16 @@ function MenuNodeTableGui:_setup_panels(node)
 	self._days_title:set_w(w)
 	
 	
-	local buttons = self.safe_rect_panel:panel({
+	self._button_panel = self.safe_rect_panel:panel({
 		x = 0,
 		y = self._info_bg_rect:h(),
 		w = self._info_bg_rect:w(),
 		h = self.safe_rect_panel:h() - self._info_bg_rect:h()
 	})
+
 	
-	self._mini_info_text = buttons:text({
-		x = buttons:w() - tweak_data.menu.info_padding * 12,
+	self._mini_info_text = self._button_panel:text({
+		x = self._button_panel:w() - tweak_data.menu.info_padding * 12,
 		y = tweak_data.menu.info_padding,
 		w = tweak_data.menu.info_padding * 11,
 		h = 35,
@@ -211,7 +209,7 @@ function MenuNodeTableGui:_setup_panels(node)
 		word_wrap = true
 	})
 	
-	self._sidejobs_button = buttons:text({
+	self._sidejobs_button = self._button_panel:text({
 		x = tweak_data.menu.info_padding + 22,
 		y = (tweak_data.menu.pd2_small_font_size + 4) * 1,
 		h = tweak_data.menu.pd2_small_font_size + 2,
@@ -226,7 +224,7 @@ function MenuNodeTableGui:_setup_panels(node)
 		wrap = true,
 		word_wrap = true
 	})
-	self._casino_button = buttons:text({
+	self._casino_button = self._button_panel:text({
 		x = tweak_data.menu.info_padding + 22,
 		y = (tweak_data.menu.pd2_small_font_size + 4) * 2,
 		h = tweak_data.menu.pd2_small_font_size + 2,
@@ -241,7 +239,7 @@ function MenuNodeTableGui:_setup_panels(node)
 		wrap = true,
 		word_wrap = true
 	})
-	self._filter_button = buttons:text({
+	self._filter_button = self._button_panel:text({
 		x = tweak_data.menu.info_padding + 1,
 		y = (tweak_data.menu.pd2_small_font_size + 4) * 3,
 		h = tweak_data.menu.pd2_small_font_size + 2,
@@ -256,7 +254,7 @@ function MenuNodeTableGui:_setup_panels(node)
 		wrap = true,
 		word_wrap = true
 	})
-	self._refresh_button = buttons:text({
+	self._refresh_button = self._button_panel:text({
 		x = tweak_data.menu.info_padding,
 		y = (tweak_data.menu.pd2_small_font_size + 4) * 4,
 		h = tweak_data.menu.pd2_small_font_size + 2,
@@ -271,8 +269,8 @@ function MenuNodeTableGui:_setup_panels(node)
 		wrap = true,
 		word_wrap = true
 	})
-	self._host_button = buttons:text({
-		x = buttons:w()/ 2 + tweak_data.menu.info_padding,
+	self._host_button = self._button_panel:text({
+		x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
 		y = tweak_data.menu.pd2_large_font_size + 4,
 		h = tweak_data.menu.pd2_large_font_size - 8,
 		align = "left",
@@ -288,8 +286,8 @@ function MenuNodeTableGui:_setup_panels(node)
 	})
 	
 	if FastNet.settings.show_reconnect then
-		self._reconnect_button = buttons:text({
-			x = buttons:w()/ 2 + tweak_data.menu.info_padding,
+		self._reconnect_button = self._button_panel:text({
+			x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
 			y = (tweak_data.menu.pd2_small_font_size + 4) * 4,
 			h = tweak_data.menu.pd2_small_font_size + 2,
 			align = "left",
@@ -305,11 +303,12 @@ function MenuNodeTableGui:_setup_panels(node)
 		})
 		local _, _, w, _ = self._reconnect_button:text_rect()
 		self._reconnect_button:set_w(w+5)
-		self._reconnect_button:set_x(buttons:w() - w - tweak_data.menu.info_padding)
+		self._reconnect_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
 		self._reconnect_button:set_y(self._host_button:y() + self._host_button:h() + 4)
+
 	end
 	
-	HUDBGBox_create(buttons, { w = buttons:w(),	h = buttons:h()})
+	HUDBGBox_create(self._button_panel, { w = self._button_panel:w(),	h = self._button_panel:h()})
 	local _, _, w, _ = self._sidejobs_button:text_rect()
 	self._sidejobs_button:set_w(w)
 	local _, _, w, _ = self._casino_button:text_rect()
@@ -320,7 +319,8 @@ function MenuNodeTableGui:_setup_panels(node)
 	self._refresh_button:set_w(w)
 	local _, _, w, _ = self._host_button:text_rect()
 	self._host_button:set_w(w)
-	self._host_button:set_x(buttons:w() - w - tweak_data.menu.info_padding)
+	self._host_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
+
 	
 	self.ws:connect_keyboard(Input:keyboard())  
     self.safe_rect_panel:key_press(callback(self, self, "key_press"))
@@ -645,7 +645,7 @@ function MenuNodeTableGui:mouse_pressed(button, x, y)
 	MenuNodeTableGui.super.mouse_pressed(self, button, x, y)
 	if button == Idstring("0") then
 		if self._reconnect_button and self._reconnect_button:inside(x, y) then
-			Reconnect:reconnect()
+			FastNet:reconnect()
 			return true
 		elseif self._host_button:inside(x, y) then
 			--node:parameters().scene_state = "standard"
@@ -769,7 +769,7 @@ function MenuNodeTableGui:mouse_moved(o, x, y)
 	end
 	
 	inside = inside or self._mini_info_text:inside(x, y)
-	--self._mouse_over = inside
-	return inside, inside and "link"
+	local inside2 = self._button_panel:inside(x, y)
+	return inside or inside2, inside and "link" or inside2 and "arrow"
 end
 
