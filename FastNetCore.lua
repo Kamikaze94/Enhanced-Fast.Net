@@ -90,7 +90,12 @@ if Hooks then
 			menu_id = FastNet.keybinds_menu,
 			localized = false,
 		})
-		
+--[[		
+		local filter_node = nodes["crimenet_filters"]
+		if filter_node then
+			filter_node:parameters().gui_class:add_filters(filter_node)
+		end
+]]		
 		local arugements = {
 			_meta = "node",
 		    --align_line = 0.5,
@@ -132,7 +137,7 @@ if Hooks then
 			local params = {
 				name = "fast_net",
 				text_id = "fast_net_title",
-				help_id = "fast_net_help",
+				--help_id = "fast_net_help",
 				callback = "find_online_games",
 				next_node = FastNet.fastnetmenu,
 			}

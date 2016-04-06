@@ -648,7 +648,6 @@ function MenuNodeTableGui:mouse_pressed(button, x, y)
 			FastNet:reconnect()
 			return true
 		elseif self._host_button:inside(x, y) then
-			--node:parameters().scene_state = "standard"
 			managers.menu:open_node("crimenet_contract_special", {})
 			managers.menu_component:disable_crimenet()
 			return true
@@ -676,6 +675,7 @@ function MenuNodeTableGui:mouse_pressed(button, x, y)
 end
 
 function MenuNodeTableGui:key_press(o, k)
+	if managers.network and managers.network:session() and not Network:is_server() then return end
 	if managers.menu_component and managers.menu_component.crimenet_enabled and not managers.menu_component:crimenet_enabled() then return end
 	
 	local reconnect_key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
