@@ -100,12 +100,18 @@ if Hooks then
 			menu_id = FastNet.keybinds_menu,
 			localized = false,
 		})
---[[		
+		
 		local filter_node = nodes["crimenet_filters"]
-		if filter_node then
-			filter_node:parameters().gui_class:add_filters(filter_node)
+		if filter_node then	--Insert save callback
+			for k, v in pairs( filter_node._items ) do
+				if "apply" == v["_parameters"]["name"] then
+					local save = function() callback(managers.network.matchmake, managers.network.matchmake, "save_persistent_settings") end
+					table.insert(v["_parameters"].callback, save)
+					break
+				end
+			end
 		end
-]]		
+		
 		local arugements = {
 			_meta = "node",
 		    --align_line = 0.5,

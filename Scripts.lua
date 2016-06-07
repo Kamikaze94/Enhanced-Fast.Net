@@ -110,7 +110,7 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 	end
 	function NetworkMatchMakingSTEAM:save_persistent_settings()
 		if not FastNet.settings.save_filter then return end
-		local f = "friends_only=" .. tostring(self._search_friends_only or false) .. ", max_lobbies=" .. tostring(self._lobby_return_count) .. ", distance=" .. tostring(self._distance_filter)
+		local f = "friends_only=" .. tostring(Global.game_settings.search_friends_only or false) .. ", max_lobbies=" .. tostring(self._lobby_return_count) .. ", distance=" .. tostring(self._distance_filter)
 		for k, v in pairs(self._lobby_filters) do
 			if tostring(k) == "difficulty" then
 				f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value + (self._lobby_filters[k].comparision_type == "equal" and 0 or 4)))
