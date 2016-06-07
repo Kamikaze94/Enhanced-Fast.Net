@@ -682,7 +682,7 @@ function MenuNodeTableGui:key_press(o, k)
 	local type = managers.controller:get_default_wrapper_type()
 	local filter_key = managers.controller:get_settings(type):get_connection("menu_toggle_filters"):get_input_name_list()[1] or "f"
 	if self._reconnect_button and k == Idstring(reconnect_key) then
-	    FastNet:reconnect()
+	    FastNet:reconnect() 
 	elseif k == Idstring(filter_key) and self._filter_button then
 		managers.menu:open_node("crimenet_filters", {})
 	end

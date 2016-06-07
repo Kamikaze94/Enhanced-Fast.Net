@@ -130,7 +130,7 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 		for key, val in string.gmatch(s, "([%w_]+)=([%w_]+)") do
 			if key and val then
 				if key == "friends_only" then
-					local friends_only = val  == "true" and true or false
+					local friends_only = FastNet.settings.show_friends_menu and false or val  == "true" and true or false
 					Global.game_settings.search_friends_only = friends_only
 					self._search_friends_only = friends_only
 				elseif key == "appropriate_jobs" then
