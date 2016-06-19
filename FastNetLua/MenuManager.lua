@@ -15,7 +15,8 @@ function MenuCallbackHandler:_find_online_games(friends_only)
 			if success then
 				local stack = managers.menu:active_menu().renderer._node_gui_stack
 				local node_gui = stack[#stack]
-				if node_gui.set_mini_info then
+				local is_FastNet = (managers.menu:active_menu().logic:selected_node():parameters().name == FastNet.fastnetmenu)
+				if is_FastNet and node_gui.set_mini_info then
 					node_gui:set_mini_info(managers.localization:text("menu_players_online", {COUNT = amount}))
 				end
 			end
@@ -79,12 +80,12 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 			local state_string_id = tweak_data:index_to_server_state(attributes_numbers[4])
 			local state_name = state_string_id and managers.localization:text("menu_lobby_server_state_" .. state_string_id) or "blah"
 			--local display_job = job_name .. ((level_name ~= job_name and job_days ~= 1)and " (" .. level_name .. ")" or "") 
-			local display_job = job_name .. ((level_name ~= job_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS") and " (" .. level_name .. ")" or "") 
+			local display_job = job_name .. ((not job_name:find(level_name) and not job_name == level_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS") and " (" .. level_name .. ")" or "") 
 			local state = attributes_numbers[4]
 			local num_plrs = attributes_numbers[5]
 			local is_friend = false
-			if Steam:logged_on() and Steam:friends() then
-				for _, friend in ipairs(Steam:friends()) do
+			if FastNet.cached_friends then
+				for _, friend in ipairs(FastNet.cached_friends) do
 					if friend:id() == room.owner_id then
 						is_friend = true
 					end
@@ -102,7 +103,7 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 						utf8.to_upper(display_job),
 						utf8.to_upper(state_name),
 						tostring(num_plrs) .. "/4 ",
-                        job_plan == 1 and "" or job_plan == 2 and ""
+                        job_plan == 1 and utf8.char(57364) or job_plan == 2 and utf8.char(57363)
 					},
 					pro = is_pro,
 					days = job_days,
@@ -138,6 +139,9 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 				if item:parameters().difficulty ~= difficulty then
 					item:parameters().difficulty = difficulty
 				end
+				if item:parameters().difficulty_num ~= difficulty_num then
+					item:parameters().difficulty_num = difficulty_num
+				end
                 if item:parameters().job_plan ~= job_plan then
 					item:parameters().job_plan = job_plan
 				end
@@ -159,6 +163,8 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 	for name, _ in pairs(dead_list) do
 		new_node:delete_item(name)
 	end
+	table.sort(new_node:items(), function (a, b) return (a:parameters().num_plrs or 0) < (b:parameters().num_plrs or 0) end)
+	--table.sort(new_node:items(), function (a, b) return (a:parameters().difficulty_num or 2) < (b:parameters().difficulty_num or 2) end)
 	managers.menu:add_back_button(new_node)
 	return new_node
 end

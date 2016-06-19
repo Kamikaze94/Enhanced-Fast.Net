@@ -4,6 +4,7 @@ if not _G.FastNet then
 	FastNet.save_path = SavePath .. "FastNet.txt"
 	FastNet.fastnetmenu = "play_STEAM_online"
 	FastNet.keybinds_menu = "base_keybinds_menu"
+	FastNet.cached_friends = Steam:logged_on() and Steam:friends() or {}
 	FastNet.settings = {
 		show_friends_menu 	= true,		--Show seperate FastNet Friends Menu
 		save_filter 		= true,		--Save Filter Settings

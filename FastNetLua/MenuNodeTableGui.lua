@@ -1,5 +1,3 @@
-log("MenuNodeTableGui")
-
 function HUDBGBox_create(panel, params, config)
 	local box_panel = panel:panel(params)
 	local color = config and config.color
@@ -772,4 +770,3 @@ function MenuNodeTableGui:mouse_moved(o, x, y)
 	local inside2 = self._button_panel:inside(x, y)
 	return inside or inside2, inside and "link" or inside2 and "arrow"
 end
-
