@@ -163,8 +163,13 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 	for name, _ in pairs(dead_list) do
 		new_node:delete_item(name)
 	end
-	table.sort(new_node:items(), function (a, b) return (a:parameters().num_plrs or 0) < (b:parameters().num_plrs or 0) end)
-	--table.sort(new_node:items(), function (a, b) return (a:parameters().difficulty_num or 2) < (b:parameters().difficulty_num or 2) end)
+	table.sort(new_node:items(), function (a, b) 
+		local a_diff, b_diff = (a:parameters().difficulty_num or 2), (b:parameters().difficulty_num or 2)
+		local lower_difficulty 	= (a_diff < b_diff)
+		local equal_difficulty 	= (a_diff == b_diff)
+		local less_players 		= (a:parameters().num_plrs or 0) < (b:parameters().num_plrs or 0)
+		return lower_difficulty or (equal_difficulty and less_players) or false
+	end)
 	managers.menu:add_back_button(new_node)
 	return new_node
 end
