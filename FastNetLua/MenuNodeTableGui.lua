@@ -218,7 +218,7 @@ function MenuNodeTableGui:_setup_panels(node)
 		font_size = tweak_data.menu.pd2_small_font_size + 2,
 		color = tweak_data.screen_colors.button_stage_3,
 		layer = self.layers.items,
-		text = managers.localization:text("menu_cn_challenge"):upper(),
+		text = managers.localization:text("menu_cn_chill"):upper(),
 		wrap = true,
 		word_wrap = true
 	})
@@ -406,8 +406,10 @@ function MenuNodeTableGui:_create_menu_item(row_item)
 		local spacing = 14
 		row_item.difficulty_icons = {}
 		for i = start_difficulty, difficulty_stars do
+			local difficulty_id = tweak_data:index_to_difficulty(i)
+			local skull_texture = difficulty_id and tweak_data.gui.blackscreen_risk_textures[difficulty_id] or "guis/textures/pd2/risklevel_blackscreen"
 			local skull = row_item.gui_panel:bitmap({
-				texture = i == num_difficulties and "guis/textures/pd2/risklevel_deathwish_blackscreen" or "guis/textures/pd2/risklevel_blackscreen",
+				texture = skull_texture,
 				x = x,
 				y = y,
 				w = h,
@@ -526,7 +528,7 @@ function MenuNodeTableGui:_create_menu_item(row_item)
 		
 		row_item.difficulty_text = row_item.gui_info_panel:text({
 			name = "difficulty_text",
-			text = utf8.to_upper(managers.localization:text("menu_difficulty_" .. row_item.item:parameters().difficulty)),
+			text = utf8.to_upper(managers.localization:text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty])),
 			font = tweak_data.menu.pd2_small_font,
 			color = tweak_data.hud.prime_color,
 			font_size = font_size,
@@ -650,7 +652,7 @@ function MenuNodeTableGui:mouse_pressed(button, x, y)
 			managers.menu_component:disable_crimenet()
 			return true
 		elseif self._sidejobs_button:inside(x, y) then
-			managers.menu:open_node("crimenet_contract_challenge", {})
+			managers.menu:open_node("custom_safehouse", {})
 			managers.menu_component:disable_crimenet()
 			return true
 		elseif self._casino_button:inside(x, y) then

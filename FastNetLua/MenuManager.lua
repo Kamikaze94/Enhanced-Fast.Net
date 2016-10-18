@@ -67,20 +67,12 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 			local job_name = job_id and tweak_data.narrative.jobs[job_id] and managers.localization:text(tweak_data.narrative.jobs[job_id].name_id) or "CONTRACTLESS"
 			local job_days = job_id and (tweak_data.narrative.jobs[job_id].job_wrapper and  table.maxn(tweak_data.narrative.jobs[tweak_data.narrative.jobs[job_id].job_wrapper[1]].chain) or table.maxn(tweak_data.narrative.jobs[job_id].chain)) or 1
 			local is_pro = job_id and (tweak_data.narrative.jobs[job_id].professional and tweak_data.narrative.jobs[job_id].professional or false) or false
-			local difficulties = {
-				"easy",
-				"normal",
-				"hard",
-				"very_hard",
-				"overkill",
-				"apocalypse"
-			}
-			local difficulty = difficulties[attributes_numbers[2]] or "error"
 			local difficulty_num = attributes_numbers[2]
+			local difficulty = tweak_data:index_to_difficulty(difficulty_num) or "error"
 			local state_string_id = tweak_data:index_to_server_state(attributes_numbers[4])
 			local state_name = state_string_id and managers.localization:text("menu_lobby_server_state_" .. state_string_id) or "blah"
 			--local display_job = job_name .. ((level_name ~= job_name and job_days ~= 1)and " (" .. level_name .. ")" or "") 
-			local display_job = job_name .. ((not job_name:find(level_name) and not job_name == level_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS") and " (" .. level_name .. ")" or "") 
+			local display_job = job_name .. ((not job_name:find(level_name) and job_name ~= level_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS") and " (" .. level_name .. ")" or "") 
 			local state = attributes_numbers[4]
 			local num_plrs = attributes_numbers[5]
 			local is_friend = false
@@ -160,9 +152,11 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 			end
 		end
 	end
+	
 	for name, _ in pairs(dead_list) do
 		new_node:delete_item(name)
 	end
+	
 	table.sort(new_node:items(), function (a, b) 
 		local a_diff, b_diff = (a:parameters().difficulty_num or 2), (b:parameters().difficulty_num or 2)
 		local lower_difficulty 	= (a_diff < b_diff)
@@ -170,14 +164,15 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 		local less_players 		= (a:parameters().num_plrs or 0) < (b:parameters().num_plrs or 0)
 		return lower_difficulty or (equal_difficulty and less_players) or false
 	end)
+	
 	managers.menu:add_back_button(new_node)
 	return new_node
 end
-
+--[[
 local modify_filter_node_actual = MenuCrimeNetFiltersInitiator.modify_node
 local clbk_choice_difficulty_filter = MenuCallbackHandler.choice_difficulty_filter
 local server_count = {10, 20, 30, 40, 50, 60, 70}
-local difficulties = {"menu_all", "menu_difficulty_normal", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_apocalypse", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill"}
+local difficulties = {"menu_all", "menu_difficulty_normal", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_easy_wish", "menu_difficulty_apocalypse", "menu_difficulty_sm_wish", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_easy_wish", "menu_difficulty_apocalypse"}
 
 function MenuCrimeNetFiltersInitiator:modify_node(original_node, ...)
 	local res = modify_filter_node_actual(self, original_node, ...)
@@ -196,6 +191,7 @@ function MenuCrimeNetFiltersInitiator:modify_node(original_node, ...)
 			max_lobbies:_show_options(nil)
 		end
 	end
+
 	if difficulties ~= nil then
 		local diff_filter = original_node:item("difficulty_filter")
 		if diff_filter ~= nil then
@@ -203,7 +199,7 @@ function MenuCrimeNetFiltersInitiator:modify_node(original_node, ...)
 			for k, v in ipairs(difficulties) do
 				diff_filter:add_option(CoreMenuItemOption.ItemOption:new({
 					_meta = "option",
-					text_id = managers.localization:text(v) .. (k > 6 and " +" or ""),
+					text_id = managers.localization:text(v) .. (k > 8 and " +" or ""),
 					value = k,
 					localize = false
 				}))
@@ -211,10 +207,11 @@ function MenuCrimeNetFiltersInitiator:modify_node(original_node, ...)
 			diff_filter:_show_options(nil)
 			local matchmake_filters = managers.network.matchmake:lobby_filters()
 			if matchmake_filters and matchmake_filters.difficulty then 
-				diff_filter:set_value(matchmake_filters.difficulty.value + (matchmake_filters.difficulty.comparision_type == "equal" and 0 or 4))
+				diff_filter:set_value(matchmake_filters.difficulty.value + (matchmake_filters.difficulty.comparision_type == "equal" and 0 or 6))
 			end
 		end
 	end
+
 	return res
 end
 
@@ -222,11 +219,12 @@ function MenuCallbackHandler:choice_difficulty_filter(item)
 	local diff_filter = item:value()
 	clbk_choice_difficulty_filter(self, item)
 	local comp = "equal"
-	if diff_filter > 6 then
+	if diff_filter > 8 then
 		comp = "equalto_or_greater_than"
-		diff_filter = diff_filter - 4
+		diff_filter = diff_filter - 6
 	elseif diff_filter <= 1 then
 		diff_filter = -1
 	end
 	managers.network.matchmake:add_lobby_filter("difficulty", diff_filter, comp)
 end
+]]

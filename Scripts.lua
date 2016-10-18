@@ -47,12 +47,7 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 		end
 	end)
 elseif string.lower(RequiredScript) == "lib/managers/menu/crimenetfiltersgui" then
-	local filter_close_cbk = CrimeNetFiltersGui.close
-	function CrimeNetFiltersGui:close()
-		filter_close_cbk(self)
-		managers.network.matchmake:save_persistent_settings()
-		managers.network.matchmake:search_lobby(Global.game_settings.search_friends_only)
-	end
+
 elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 	function NetworkMatchMakingSTEAM:join_server_with_check(room_id, is_invite)
 		managers.menu:show_joining_lobby_dialog()
@@ -99,59 +94,6 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 			lobby:request_data()
 		else
 			f()
-		end
-	end
-		
-	--Persistent Filter Settings
-	local init_cbk = NetworkMatchMakingSTEAM.init
-	function NetworkMatchMakingSTEAM:init()
-		init_cbk(self)
-		self:_load_persistent_settings()
-	end
-	function NetworkMatchMakingSTEAM:save_persistent_settings()
-		if not FastNet.settings.save_filter then return end
-		local f = "friends_only=" .. tostring(Global.game_settings.search_friends_only or false) .. ", max_lobbies=" .. tostring(self._lobby_return_count) .. ", distance=" .. tostring(self._distance_filter)
-		for k, v in pairs(self._lobby_filters) do
-			if tostring(k) == "difficulty" then
-				f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value + (self._lobby_filters[k].comparision_type == "equal" and 0 or 4)))
-			else
-				f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value))
-			end
-		end
-		FastNet.settings.filter = f
-		FastNet:Save()
-		--managers.network.matchmake:search_lobby(managers.network.matchmake:search_friends_only())
-	end
-
-	function NetworkMatchMakingSTEAM:_load_persistent_settings()
-		if not FastNet.settings.save_filter then return end
-		FastNet:Load()
-		s = FastNet.settings.filter or ""
-		for key, val in string.gmatch(s, "([%w_]+)=([%w_]+)") do
-			if key and val then
-				if key == "friends_only" then
-					local friends_only = FastNet.settings.show_friends_menu and false or val  == "true" and true or false
-					Global.game_settings.search_friends_only = friends_only
-					self._search_friends_only = friends_only
-				elseif key == "appropriate_jobs" then
-					local appropriate_jobs = val  == "true" and true or false
-					Global.game_settings.search_appropriate_jobs = appropriate_jobs
-					self._search_appropriate_jobs = appropriate_jobs
-				elseif key == "max_lobbies" then
-					self:set_lobby_return_count(tonumber(val))
-				elseif key == "distance" then
-					self:set_distance_filter(tonumber(val))
-				elseif key == "difficulty" then
-					local comp = "equal"
-					if tonumber(val) > 6 then
-						comp = "equalto_or_greater_than"
-						val = tonumber(val) - 4
-					end
-					self:add_lobby_filter(key, tonumber(val), comp)
-				else
-					self:add_lobby_filter(key, tonumber(val), "equal")
-				end
-			end
 		end
 	end
 elseif string.lower(RequiredScript) == "lib/managers/menu/menucomponentmanager" then
