@@ -1,6 +1,6 @@
 if RequiredScript == "lib/managers/crimenetmanager" then
 
-	Hooks:PostHook(CrimeNetGui, "init", "reinit", function(self, ws, fullscreeen_ws, node)
+	Hooks:PostHook(CrimeNetGui, "init", "FastNet_CrimeNetGui_init", function(self, ws, fullscreeen_ws, node)
 			if not FastNet.settings.show_reconnect or node:parameters().no_servers then return end
 			key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
 			local reconnect_button = self._panel:text({
@@ -25,7 +25,7 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 			FastNet:reconnect()
 		end
 	end
-	Hooks:PostHook(CrimeNetGui, "mouse_moved", "mouse_move", function(self, o, x, y)
+	Hooks:PostHook(CrimeNetGui, "mouse_moved", "FastNet_CrimeNetGui_mouse_move", function(self, o, x, y)
 		if self._panel:child("reconnect_button") then
 			if self._panel:child("reconnect_button"):inside(x, y) then
 				if not self._reconnect_highlighted then
@@ -40,7 +40,7 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 		end
 	end)
 
-	Hooks:PostHook(CrimeNetGui, "mouse_pressed", "mouse_presse", function(self, o, button, x, y)
+	Hooks:PostHook(CrimeNetGui, "mouse_pressed", "FastNet_CrimeNetGui_mouse_pressed", function(self, o, button, x, y)
 		if self._panel:child("reconnect_button") and self._panel:child("reconnect_button"):inside(x, y) then
 			FastNet:reconnect()    
 			return

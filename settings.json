@@ -15,14 +15,6 @@
 		},
 		{
 			"type" : "toggle",
-			"id" : "save_filter",
-			"title" : "fastnet_save_filter_title",
-			"description" : "fastnet_save_filter_desc",
-			"callback" : "clbk_change_fastnet_setting",
-			"value" : "save_filter",
-		},
-		{
-			"type" : "toggle",
 			"id" : "show_reconnect",
 			"title" : "fastnet_show_reconnect_title",
 			"description" : "fastnet_show_reconnect_desc",

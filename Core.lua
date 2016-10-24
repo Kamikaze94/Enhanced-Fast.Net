@@ -6,23 +6,21 @@ if not _G.FastNet then
 	FastNet.keybinds_menu = "base_keybinds_menu"
 	FastNet.settings = {
 		show_friends_menu 	= true,		--Show seperate FastNet Friends Menu
-		save_filter 		= true,		--Save Filter Settings
 		show_reconnect 		= true,		--Show reconnect Button
-		filter = "",
 		last_lobby_id = nil
 	}
 end
 
 FastNet.hook_files = {
-	["lib/managers/menu/renderers/menunodetablegui"] = "FastNetLua/MenuNodeTableGui.lua",
-	["lib/managers/menu/nodes/menunodeserverlist"] = "FastNetLua/MenuNodeServerList.lua",
-	["lib/managers/menu/menunodegui"] = "FastNetLua/MenuNodeGui.lua",
-	["lib/managers/menumanager"] = "FastNetLua/MenuManager.lua",
-	["lib/network/matchmaking/networkmatchmakingsteam"] = "Scripts.lua",
-	["lib/managers/menu/menucomponentmanager"] = "Scripts.lua",
-	["lib/network/base/hostnetworksession"] = "Scripts.lua",
-	["lib/managers/crimenetmanager"] = "Scripts.lua",
-	["lib/managers/menu/crimenetfiltersgui"] = "Scripts.lua",
+	["lib/managers/menu/renderers/menunodetablegui"] = "lua/FastNet.lua",
+	["lib/managers/menu/nodes/menunodeserverlist"] = "lua/FastNet.lua",
+	["lib/managers/menu/menunodegui"] = "lua/FastNet.lua",
+	["lib/managers/menumanager"] = "lua/FastNet.lua",
+	["lib/network/matchmaking/networkmatchmakingsteam"] = { "lua/Reconnect.lua", "lua/FastNet.lua" },
+	["lib/managers/menu/menucomponentmanager"] = "lua/Reconnect.lua",
+	["lib/network/base/hostnetworksession"] = "lua/Reconnect.lua",
+	["lib/managers/crimenetmanager"] = "lua/Reconnect.lua",
+	["lib/managers/menu/crimenetfiltersgui"] = "lua/Reconnect.lua",
 }
 
 if not FastNet.setup then	
@@ -60,8 +58,12 @@ end
 
 if RequiredScript then
 	local requiredScript = RequiredScript:lower()
-	if FastNet.hook_files[requiredScript] then
-		dofile( ModPath .. FastNet.hook_files[requiredScript] )
+	local hook_files = FastNet.hook_files[requiredScript]
+	if type(hook_files) == "string" then
+		hook_files = { hook_files }
+	end
+	for i, file in ipairs(hook_files) do
+		dofile( ModPath .. file )
 	end
 end
 
@@ -102,14 +104,8 @@ if Hooks then
 		})
 		
 		local filter_node = nodes["crimenet_filters"]
-		if filter_node then	--Insert save callback
-			for k, v in pairs( filter_node._items ) do
-				if "apply" == v["_parameters"]["name"] then
-					local save = function() callback(managers.network.matchmake, managers.network.matchmake, "save_persistent_settings") end
-					table.insert(v["_parameters"].callback, save)
-					break
-				end
-			end
+		if filter_node then	
+			
 		end
 		
 		local arugements = {
