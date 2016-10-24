@@ -53,10 +53,12 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 			dead_list[item:parameters().room_id] = true
 		end
 	end
+	local friends_list = Steam:logged_on() and Steam:friends() or {}
 	for i, room in ipairs(room_list) do
 		local name_str = tostring(room.owner_name)
 		local attributes_numbers = attribute_list[i].numbers
-		if managers.network.matchmake:is_server_ok(friends_only, room.owner_id, attributes_numbers) then
+		local attributes_mutators = attribute_list[i].mutators
+		if managers.network.matchmake:is_server_ok(friends_only, room.owner_id, attributes_numbers, nil, attributes_mutators) then
 			dead_list[room.room_id] = nil
 			local host_name = name_str
 			local level_index, job_index = managers.network.matchmake:_split_attribute_number(attributes_numbers[1], 1000)
@@ -75,16 +77,19 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 			local display_job = job_name .. ((not job_name:find(level_name) and job_name ~= level_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS") and " (" .. level_name .. ")" or "") 
 			local state = attributes_numbers[4]
 			local num_plrs = attributes_numbers[5]
+			local kick_option = attributes_numbers[8]
+			local kick_suffix = {[1] = "server", [2] = "vote", [0] = "disabled"}
+			local kick_option_name = "menu_kick_" .. (kick_suffix[kick_option] or "error")
+            local job_plan = attributes_numbers[10]
+			local job_plan_suffix = {"plan_loud", "plan_stealth"}
+			local job_plan_name = "menu_" .. (job_plan_suffix[job_plan] or "any")
 			local is_friend = false
-			if FastNet.cached_friends then
-				for _, friend in ipairs(FastNet.cached_friends) do
-					if friend:id() == room.owner_id then
-						is_friend = true
-					end
+			for _, friend in ipairs(friends_list) do
+				if friend:id() == room.owner_id then
+					is_friend = true
 				end
 			end
 			local item = new_node:item(room.room_id)
-            local job_plan = attributes_numbers[10]
 			if not item and not (state  ~= 1 and not tweak_data.narrative.jobs[job_id]) then
 				local params = {
 					name = room.room_id,
@@ -105,11 +110,15 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 					state_name = state_name,
 					difficulty = difficulty,
                     job_plan = job_plan,
+					job_plan_name = job_plan_name,
 					difficulty_num = difficulty_num or 2,
 					host_name = host_name,
 					state = state,
 					num_plrs = num_plrs,
+					kick_option = kick_option,
+					kick_option_name = kick_option_name,
 					friend = is_friend,
+					mutators = attributes_mutators,
 					callback = "connect_to_lobby",
 					localize = "false"
 				}
@@ -136,6 +145,7 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 				end
                 if item:parameters().job_plan ~= job_plan then
 					item:parameters().job_plan = job_plan
+					item:parameters().job_plan_name = job_plan_name
 				end
 				if item:parameters().room_id ~= room.room_id then
 					item:parameters().room_id = room.room_id
@@ -146,6 +156,13 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 				end
 				if item:parameters().friend ~= is_friend then
 					item:parameters().friend = is_friend
+				end
+				if item:parameters().kick_option ~= kick_option then
+					item:parameters().kick_option = kick_option
+					item:parameters().kick_option_name = kick_option_name
+				end
+				if item:parameters().mutators ~= attributes_mutators then
+					item:parameters().mutators = attributes_mutators
 				end
 			elseif item then
 				new_node:delete_item(room.room_id)
@@ -168,6 +185,7 @@ function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 	managers.menu:add_back_button(new_node)
 	return new_node
 end
+
 --[[
 local modify_filter_node_actual = MenuCrimeNetFiltersInitiator.modify_node
 local clbk_choice_difficulty_filter = MenuCallbackHandler.choice_difficulty_filter

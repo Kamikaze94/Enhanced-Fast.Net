@@ -47,7 +47,12 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 		end
 	end)
 elseif string.lower(RequiredScript) == "lib/managers/menu/crimenetfiltersgui" then
+	local filter_close_cbk = CrimeNetFiltersGui.close
 
+	function CrimeNetFiltersGui:close()
+		filter_close_cbk(self)
+		managers.network.matchmake:search_lobby(Global.game_settings.search_friends_only)
+	end
 elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 	function NetworkMatchMakingSTEAM:join_server_with_check(room_id, is_invite)
 		managers.menu:show_joining_lobby_dialog()

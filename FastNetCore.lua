@@ -4,7 +4,6 @@ if not _G.FastNet then
 	FastNet.save_path = SavePath .. "FastNet.txt"
 	FastNet.fastnetmenu = "play_STEAM_online"
 	FastNet.keybinds_menu = "base_keybinds_menu"
-	FastNet.cached_friends = Steam:logged_on() and Steam:friends() or {}
 	FastNet.settings = {
 		show_friends_menu 	= true,		--Show seperate FastNet Friends Menu
 		save_filter 		= true,		--Save Filter Settings
@@ -20,10 +19,10 @@ FastNet.hook_files = {
 	["lib/managers/menu/menunodegui"] = "FastNetLua/MenuNodeGui.lua",
 	["lib/managers/menumanager"] = "FastNetLua/MenuManager.lua",
 	["lib/network/matchmaking/networkmatchmakingsteam"] = "Scripts.lua",
-	["lib/managers/menu/crimenetfiltersgui"] = "Scripts.lua",
 	["lib/managers/menu/menucomponentmanager"] = "Scripts.lua",
 	["lib/network/base/hostnetworksession"] = "Scripts.lua",
-	["lib/managers/crimenetmanager"] = "Scripts.lua"
+	["lib/managers/crimenetmanager"] = "Scripts.lua",
+	["lib/managers/menu/crimenetfiltersgui"] = "Scripts.lua",
 }
 
 if not FastNet.setup then	

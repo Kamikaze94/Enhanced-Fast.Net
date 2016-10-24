@@ -5,11 +5,11 @@ function MenuNodeGui._highlight_row_item(self, row_item, mouse_over)
 	if row_item then
 		if row_item.type == "server_column" then
 			for i, gui in ipairs(row_item.gui_columns) do
-				--gui:set_color(i == 2 and  row_item.item:parameters().pro and tweak_data.screen_colors.pro_color or row_item.color)
+				local item_params = row_item.item:parameters()
 				if i == 1 then 
-					gui:set_color(row_item.item:parameters().friend and Color('1EEB84') or row_item.color)
+					gui:set_color(item_params.friend and tweak_data.screen_colors.friend_color or row_item.color)
 				elseif i == 2 then 
-					gui:set_color(row_item.item:parameters().pro and Color.red or row_item.color) 
+					gui:set_color(item_params.pro and tweak_data.screen_colors.pro_color or item_params.mutators and tweak_data.screen_colors.mutators_color_text or row_item.color)
 				end
 				gui:set_font(Idstring(row_item.font))
 			end
@@ -28,10 +28,11 @@ function MenuNodeGui._fade_row_item(self, row_item)
 	if row_item then
 		if row_item.type == "server_column" then
 			for i, gui in ipairs(row_item.gui_columns) do
+				local item_params = row_item.item:parameters()
 				if i == 1 then 
-					gui:set_color(row_item.item:parameters().friend and tweak_data.screen_colors.friend_color or row_item.color)
+					gui:set_color(item_params.friend and tweak_data.screen_colors.friend_color or row_item.color)
 				elseif i == 2 then 
-					gui:set_color(row_item.item:parameters().pro and tweak_data.screen_colors.pro_color or row_item.color)
+					gui:set_color(item_params.pro and tweak_data.screen_colors.pro_color or item_params.mutators and tweak_data.screen_colors.mutators_color or row_item.color)
 				end
 				gui:set_font(Idstring(row_item.font))
 			end

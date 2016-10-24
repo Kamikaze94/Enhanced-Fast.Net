@@ -149,6 +149,17 @@ function MenuNodeTableGui:_setup_panels(node)
 		h = font_size,
 		layer = 1
 	})
+	self._kick_title = self.safe_rect_panel:text({
+		name = "kick_title",
+		text = utf8.to_upper(managers.localization:text("menu_kicking_allowed_option")) .. ":  ",
+		font = tweak_data.menu.pd2_small_font,
+		font_size = font_size,
+		align = "left",
+		vertical = "center",
+		w = 256,
+		h = font_size,
+		layer = 1
+	})
 	
 	local offset = 22 * tweak_data.scale.lobby_info_offset_multiplier
 	local _, _, w, _ = self._server_title:text_rect()
@@ -176,10 +187,16 @@ function MenuNodeTableGui:_setup_panels(node)
 	self._job_plan_title:set_y(2 * tweak_data.menu.info_padding + 4 * offset)
 	self._job_plan_title:set_w(w)
 	
+	local _, _, w, _ = self._kick_title:text_rect()
+	self._kick_title:set_x(tweak_data.menu.info_padding)
+	self._kick_title:set_y(2 * tweak_data.menu.info_padding + 5 * offset)
+	self._kick_title:set_w(w)
+	
 	local _, _, w, _ = self._days_title:text_rect()
 	self._days_title:set_x(tweak_data.menu.info_padding)
-	self._days_title:set_y(2 * tweak_data.menu.info_padding + 5 * offset)
+	self._days_title:set_y(2 * tweak_data.menu.info_padding + 6 * offset)
 	self._days_title:set_w(w)
+	
 	
 	
 	self._button_panel = self.safe_rect_panel:panel({
@@ -383,7 +400,7 @@ function MenuNodeTableGui:_create_menu_item(row_item)
 				vertical = "center",
 				font = row_item.font,
 				font_size = math.round(row_item.font_size * 0.77),
-				color = (i == 2 and row_item.item:parameters().pro and tweak_data.screen_colors.pro_color or i == 1 and row_item.item:parameters().friend and tweak_data.screen_colors.friend_color or row_item.color),
+				color = (i == 2 and row_item.item:parameters().pro and tweak_data.screen_colors.pro_color or i == 2 and row_item.item:parameters().mutators and tweak_data.screen_colors.mutators_color or i == 1 and row_item.item:parameters().friend and tweak_data.screen_colors.friend_color or row_item.color),
 				layer = self.layers.items,
 				text = row_item.item:parameters().columns[i]
 			})
@@ -428,6 +445,26 @@ function MenuNodeTableGui:_create_menu_item(row_item)
 		
 		local level_id = row_item.item:parameters().level_id
 		local days = row_item.item:parameters().days
+		local mutators = row_item.item:parameters().mutators or {}
+		local mutators_list = {}
+		local mutators_text = ""
+		if mutators then
+			managers.mutators:set_crimenet_lobby_data(mutators)
+			for mutator_id, mutator_data in pairs(mutators) do
+				local mutator = managers.mutators:get_mutator_from_id(mutator_id)
+				if mutator then
+					table.insert(mutators_list, mutator:name()) 
+				end
+			end
+			managers.mutators:set_crimenet_lobby_data(nil)
+			table.sort(mutators_list, function(a, b) 
+				return a < b
+			end)
+			for i, mutator in ipairs(mutators_list) do
+				mutators_text = string.format("%s%s", mutators_text, (mutator .. (i > 1 and "\n" or "")))
+			end
+		end
+		
 		row_item.gui_info_panel = self.safe_rect_panel:panel({
 			visible = false,
 			layer = self.layers.items,
@@ -541,7 +578,7 @@ function MenuNodeTableGui:_create_menu_item(row_item)
         
 		row_item.job_plan_text = row_item.gui_info_panel:text({
 			name = "job_plan_text",
-			text = utf8.to_upper(managers.localization:text("menu_" .. (row_item.item:parameters().job_plan == 1 and "plan_loud" or row_item.item:parameters().job_plan == 2 and "plan_stealth" or "any"))),
+			text = utf8.to_upper(managers.localization:text(row_item.item:parameters().job_plan_name)),
 			font = tweak_data.menu.pd2_small_font,
 			color = tweak_data.hud.prime_color,
 			font_size = font_size,
@@ -555,6 +592,41 @@ function MenuNodeTableGui:_create_menu_item(row_item)
 		row_item.days_text = row_item.gui_info_panel:text({
 			name = "days_text",
 			text = utf8.to_upper(days),
+			font = tweak_data.menu.pd2_small_font,
+			color = tweak_data.hud.prime_color,
+			font_size = font_size,
+			align = "left",
+			vertical = "center",
+			w = 256,
+			h = font_size,
+			layer = 1
+		})
+		row_item.kick_text = row_item.gui_info_panel:text({
+			name = "kick_text",
+			text = utf8.to_upper(managers.localization:text(row_item.item:parameters().kick_option_name)),
+			font = tweak_data.menu.pd2_small_font,
+			color = tweak_data.hud.prime_color,
+			font_size = font_size,
+			align = "left",
+			vertical = "center",
+			w = 256,
+			h = font_size,
+			layer = 1
+		})
+		row_item.mutators_title = row_item.gui_info_panel:text({
+			name = "mutators_title",
+			text = utf8.to_upper(managers.localization:text("menu_mutators")) .. ":  ",
+			font = tweak_data.menu.pd2_small_font,
+			font_size = font_size,
+			align = "left",
+			vertical = "center",
+			w = 256,
+			h = font_size,
+			layer = 1
+		})
+		row_item.mutators_list = row_item.gui_info_panel:text({
+			name = "days_text",
+			text = utf8.to_upper(mutators_text),
 			font = tweak_data.menu.pd2_small_font,
 			color = tweak_data.hud.prime_color,
 			font_size = font_size,
@@ -620,17 +692,41 @@ function MenuNodeTableGui:_align_server_column(row_item)
 	row_item.job_plan_text:set_lefttop(self._job_plan_title:righttop())
 	row_item.job_plan_text:set_w(row_item.gui_info_panel:w())
 	row_item.job_plan_text:set_position(math.round(row_item.job_plan_text:x()), math.round(row_item.job_plan_text:y()))
+	
+	row_item.kick_text:set_lefttop(self._kick_title:righttop())
+	row_item.kick_text:set_w(row_item.gui_info_panel:w())
+	row_item.kick_text:set_position(math.round(row_item.kick_text:x()), math.round(row_item.kick_text:y()))
+	
+	local mutators_active = row_item.item:parameters().mutators or false
+	
+	local _, _, w, h = row_item.mutators_list:text_rect()
+	row_item.mutators_list:set_w(row_item.gui_info_panel:w())
+	row_item.mutators_list:set_h(h)
+	row_item.mutators_list:set_bottom(self._info_bg_rect:h() - 2 * tweak_data.menu.info_padding)
+	row_item.mutators_list:set_visible(mutators_active)
+	
+	local _, _, w, _ = row_item.mutators_title:text_rect()
+	row_item.mutators_title:set_x(tweak_data.menu.info_padding)
+	row_item.mutators_title:set_w(w)
+	row_item.mutators_title:set_visible(mutators_active)
+	
+	row_item.mutators_title:set_top(row_item.mutators_list:top())
+	row_item.mutators_list:set_left(row_item.mutators_title:right())
+	
+	row_item.mutators_title:set_position(math.round(row_item.mutators_title:x()), math.floor(row_item.mutators_title:y()))
+	row_item.mutators_list:set_position(math.round(row_item.mutators_list:x()), math.floor(row_item.mutators_list:y()))
     
 	local _, _, _, h = row_item.heist_name:text_rect()
 	local w = row_item.gui_info_panel:w()
 	row_item.heist_name:set_height(h)
 	row_item.heist_name:set_w(w - tweak_data.menu.info_padding )
+	
 	row_item.heist_briefing:set_w(w - tweak_data.menu.info_padding * 2 )
 	row_item.heist_briefing:set_shape(row_item.heist_briefing:text_rect())
 	row_item.heist_briefing:set_x(tweak_data.menu.info_padding)
-	row_item.heist_briefing:set_y(4 * tweak_data.menu.info_padding + offset * 6)
+	row_item.heist_briefing:set_y(row_item.days_text:bottom() + 2 * tweak_data.menu.info_padding)
 	row_item.heist_briefing:set_position(math.round(row_item.heist_briefing:x()), math.round(row_item.heist_briefing:y()))
-	row_item.heist_briefing:set_h(math.round(tweak_data.menu.pd2_small_font_size * 15.5))
+	row_item.heist_briefing:set_h(math.floor(self._info_bg_rect:h() - (row_item.days_text:bottom() + (row_item.mutators_list:visible() and (row_item.mutators_list:h() + 2 * tweak_data.menu.info_padding) or 0) + 4 * tweak_data.menu.info_padding)))
 end
 
 
