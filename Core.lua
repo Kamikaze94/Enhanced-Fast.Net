@@ -14,7 +14,7 @@ if not _G.FastNet then
 		["lib/managers/menu/renderers/menunodetablegui"] = "lua/FastNet.lua",
 		["lib/managers/menu/nodes/menunodeserverlist"] = "lua/FastNet.lua",
 		["lib/managers/menu/menunodegui"] = "lua/FastNet.lua",
-		["lib/managers/menumanager"] = { "lua/FastNet.lua", "lua/ExtendedFilters.lua" }
+		["lib/managers/menumanager"] = { "lua/FastNet.lua", "lua/ExtendedFilters.lua" },
 		["lib/network/matchmaking/networkmatchmakingsteam"] = { "lua/Reconnect.lua", "lua/ExtendedFilters.lua" },
 		["lib/managers/menu/menucomponentmanager"] = "lua/Reconnect.lua",
 		["lib/network/base/hostnetworksession"] = "lua/Reconnect.lua",
