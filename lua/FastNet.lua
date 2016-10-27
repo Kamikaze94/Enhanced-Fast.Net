@@ -1,6 +1,75 @@
 local requiredScript = string.lower(RequiredScript)
 
 if requiredScript == "lib/managers/menumanager" then
+	
+	Hooks:Add("MenuManagerBuildCustomMenus", "FastNet_MenuManager_BuildFastNetMenu", function( menu_manager, nodes )		
+		local arugements = {
+			_meta = "node",
+		    --align_line = 0.5,
+		    back_callback = "stop_multiplayer",
+		    gui_class = "MenuNodeTableGui",
+		    menu_components = "",
+		    modifier = "MenuSTEAMHostBrowser",
+		    name = FastNet.fastnetmenu,
+		    refresh = "MenuSTEAMHostBrowser",
+		    stencil_align = "right",
+		    stencil_image = "bg_creategame",
+		    topic_id = "menu_play_online",
+		    type = "MenuNodeServerList",
+		    update = "MenuSTEAMHostBrowser",
+			scene_state = "standard"
+		}
+		
+		local type = "MenuNodeServerList"
+		if type then
+			node_class = CoreSerialize.string_to_classtable(type)
+		end
+		nodes[FastNet.fastnetmenu] = node_class:new(arugements)
+		
+		local callback_handler = CoreSerialize.string_to_classtable("MenuCallbackHandler")
+		nodes[FastNet.fastnetmenu]:set_callback_handler(callback_handler:new())
+
+		if nodes.main then
+			local parent_menu = nodes.main
+			local menu_position = 1
+			for k, v in pairs( parent_menu._items ) do
+				if "crimenet" == v["_parameters"]["name"] then
+					menu_position = k + 1
+					break
+				end
+			end
+			
+			local data = {
+				type = "CoreMenuItem.Item",
+			}
+			
+			if FastNet.settings.show_friends_menu then
+				local params = {
+					name = "fast_net_friends",
+					text_id = "fast_net_friends_title",
+					--help_id = "fast_net_help",
+					callback = "find_online_games_with_friends",
+					next_node = FastNet.fastnetmenu,
+				}
+				local new_item = parent_menu:create_item(data, params)
+				parent_menu:add_item(new_item)
+				local element = table.remove(parent_menu._items, table.maxn(parent_menu._items))
+				table.insert( parent_menu._items, menu_position, element )
+			end
+			
+			local params = {
+				name = "fast_net",
+				text_id = "fast_net_title",
+				--help_id = "fast_net_help",
+				callback = "play_online_game find_online_games",
+				next_node = FastNet.fastnetmenu,
+			}
+			local new_item = parent_menu:create_item(data, params)
+			parent_menu:add_item(new_item)
+			local element = table.remove(parent_menu._items, table.maxn(parent_menu._items))
+			table.insert( parent_menu._items, menu_position, element )
+		end
+	end)
 
 	function MenuCallbackHandler:_find_online_games(friends_only)
 		friends_only = friends_only or Global.game_settings.search_friends_only
@@ -53,12 +122,14 @@ if requiredScript == "lib/managers/menumanager" then
 		
 		local room_list = info.room_list
 		local attribute_list = info.attribute_list
+		
 		local dead_list = {}
 		for _, item in ipairs(node:items()) do
 			if not item:parameters().back and not item:parameters().filter and not item:parameters().pd2_corner then
 				dead_list[item:parameters().room_id] = true
 			end
 		end
+		
 		local friends_list = Steam:logged_on() and Steam:friends() or {}
 		for i, room in ipairs(room_list) do
 			local name_str = tostring(room.owner_name)
@@ -78,9 +149,8 @@ if requiredScript == "lib/managers/menumanager" then
 				local difficulty_num = attributes_numbers[2]
 				local difficulty = tweak_data:index_to_difficulty(difficulty_num) or "error"
 				local state_string_id = tweak_data:index_to_server_state(attributes_numbers[4])
-				local state_name = state_string_id and managers.localization:text("menu_lobby_server_state_" .. state_string_id) or "blah"
-				--local display_job = job_name .. ((level_name ~= job_name and job_days ~= 1)and " (" .. level_name .. ")" or "") 
-				local display_job = job_name .. ((job_name ~= level_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS") and " (" .. level_name .. ")" or "") 
+				local state_name = state_string_id and managers.localization:text("menu_lobby_server_state_" .. state_string_id) or "UNKNOWN"
+				local display_job = job_name .. ((job_name ~= level_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS" and job_days > 1) and " (" .. level_name .. ")" or "") 
 				local state = attributes_numbers[4]
 				local num_plrs = attributes_numbers[5]
 				local kick_option = attributes_numbers[8]
@@ -106,7 +176,7 @@ if requiredScript == "lib/managers/menumanager" then
 							utf8.to_upper(display_job),
 							utf8.to_upper(state_name),
 							tostring(num_plrs) .. "/4 ",
-							job_plan == 1 and utf8.char(57364) or job_plan == 2 and utf8.char(57363)
+							(job_plan == 1 and utf8.char(57364) or job_plan == 2 and utf8.char(57363) or "")
 						},
 						pro = is_pro,
 						days = job_days,
@@ -126,7 +196,7 @@ if requiredScript == "lib/managers/menumanager" then
 						friend = is_friend,
 						mutators = attributes_mutators,
 						callback = "connect_to_lobby",
-						localize = "false"
+						localize = false,
 					}
 					local new_item = new_node:create_item({ type = "ItemServerColumn" }, params)
 					new_node:add_item(new_item)
@@ -152,6 +222,7 @@ if requiredScript == "lib/managers/menumanager" then
 					if item:parameters().job_plan ~= job_plan then
 						item:parameters().job_plan = job_plan
 						item:parameters().job_plan_name = job_plan_name
+						item:parameters().columns[5] = (job_plan == 1 and utf8.char(57364) or job_plan == 2 and utf8.char(57363) or "")
 					end
 					if item:parameters().room_id ~= room.room_id then
 						item:parameters().room_id = room.room_id
@@ -478,6 +549,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		
 		
 		self._button_panel = self.safe_rect_panel:panel({
+			name = "button_panel",
 			x = 0,
 			y = self._info_bg_rect:h(),
 			w = self._info_bg_rect:w(),
@@ -486,6 +558,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 
 		
 		self._mini_info_text = self._button_panel:text({
+			name = "players_online_text",
 			x = self._button_panel:w() - tweak_data.menu.info_padding * 12,
 			y = tweak_data.menu.info_padding,
 			w = tweak_data.menu.info_padding * 11,
@@ -502,7 +575,8 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			word_wrap = true
 		})
 		
-		self._sidejobs_button = self._button_panel:text({
+		self._safehouse_button = self._button_panel:text({
+			name = "safehouse_btn",
 			x = tweak_data.menu.info_padding + 22,
 			y = (tweak_data.menu.pd2_small_font_size + 4) * 1,
 			h = tweak_data.menu.pd2_small_font_size + 2,
@@ -518,6 +592,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			word_wrap = true
 		})
 		self._casino_button = self._button_panel:text({
+			name = "casino_btn",
 			x = tweak_data.menu.info_padding + 22,
 			y = (tweak_data.menu.pd2_small_font_size + 4) * 2,
 			h = tweak_data.menu.pd2_small_font_size + 2,
@@ -533,6 +608,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			word_wrap = true
 		})
 		self._filter_button = self._button_panel:text({
+			name = "filter_btn",
 			x = tweak_data.menu.info_padding + 1,
 			y = (tweak_data.menu.pd2_small_font_size + 4) * 3,
 			h = tweak_data.menu.pd2_small_font_size + 2,
@@ -548,6 +624,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			word_wrap = true
 		})
 		self._refresh_button = self._button_panel:text({
+			name = "refresh_btn",
 			x = tweak_data.menu.info_padding,
 			y = (tweak_data.menu.pd2_small_font_size + 4) * 4,
 			h = tweak_data.menu.pd2_small_font_size + 2,
@@ -563,6 +640,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			word_wrap = true
 		})
 		self._host_button = self._button_panel:text({
+			name = "host_btn",
 			x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
 			y = tweak_data.menu.pd2_large_font_size + 4,
 			h = tweak_data.menu.pd2_large_font_size - 8,
@@ -580,6 +658,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		
 		if FastNet.settings.show_reconnect then
 			self._reconnect_button = self._button_panel:text({
+				name = "reconnect_btn",
 				x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
 				y = (tweak_data.menu.pd2_small_font_size + 4) * 4,
 				h = tweak_data.menu.pd2_small_font_size + 2,
@@ -602,8 +681,8 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		end
 		
 		HUDBGBox_create(self._button_panel, { w = self._button_panel:w(),	h = self._button_panel:h()})
-		local _, _, w, _ = self._sidejobs_button:text_rect()
-		self._sidejobs_button:set_w(w)
+		local _, _, w, _ = self._safehouse_button:text_rect()
+		self._safehouse_button:set_w(w)
 		local _, _, w, _ = self._casino_button:text_rect()
 		self._casino_button:set_w(w)
 		local _, _, w, _ = self._filter_button:text_rect()
@@ -1051,7 +1130,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				managers.menu:open_node("crimenet_contract_special", {})
 				managers.menu_component:disable_crimenet()
 				return true
-			elseif self._sidejobs_button:inside(x, y) then
+			elseif self._safehouse_button:inside(x, y) then
 				managers.menu:open_node("custom_safehouse", {})
 				managers.menu_component:disable_crimenet()
 				return true
@@ -1093,84 +1172,49 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 	end
 
 	function MenuNodeTableGui:mouse_moved(o, x, y)
-		local inside = false
+		local over_button = nil
 		if self._reconnect_button then
-			if self._reconnect_button:inside(x, y) then
-				if not self._reconnect_highlighted then
-					self._reconnect_highlighted = true
-					self._reconnect_button:set_color(tweak_data.screen_colors.button_stage_2)
-					managers.menu_component:post_event("highlight")
-				end
-				inside = true
-			else
-				self._reconnect_button:set_color(tweak_data.screen_colors.button_stage_3)
-				self._reconnect_highlighted = false
+			if not over_button and self._reconnect_button:inside(x, y) then
+				over_button = self._reconnect_button
 			end
 		end
 		
-		if self._host_button:inside(x, y) then
-			if not self._host_highlighted then
-				self._host_highlighted = true
-				self._host_button:set_color(tweak_data.screen_colors.button_stage_2)
+		if not over_button and self._host_button:inside(x, y) then
+			over_button = self._host_button
+		end
+		
+		if not over_button and self._safehouse_button:inside(x, y) then
+			over_button = self._safehouse_button
+		end
+		
+		if not over_button and self._casino_button:inside(x, y) then
+			over_button = self._casino_button
+		end
+		
+		if not over_button and self._filter_button:inside(x, y) then
+			over_button = self._filter_button
+		end
+		
+		if not over_button and self._refresh_button:inside(x, y) then
+			over_button = self._refresh_button
+		end
+		
+		if not (over_button and self._highlighted_button and self._highlighted_button:name() == over_button:name()) then
+			if self._highlighted_button then
+				self._highlighted_button:set_color(tweak_data.screen_colors.button_stage_3)
+			end
+			if over_button then
+				over_button:set_color(tweak_data.screen_colors.button_stage_2)
 				managers.menu_component:post_event("highlight")
 			end
-			inside = true
-		else
-			self._host_button:set_color(tweak_data.screen_colors.button_stage_3)
-			self._host_highlighted = false
+			self._highlighted_button = over_button
 		end
 		
-		if self._sidejobs_button:inside(x, y) then
-			if not self._sidejobs_highlighted then
-				self._sidejobs_highlighted = true
-				self._sidejobs_button:set_color(tweak_data.screen_colors.button_stage_2)
-				managers.menu_component:post_event("highlight")
-			end
-			inside = true
-		else
-			self._sidejobs_button:set_color(tweak_data.screen_colors.button_stage_3)
-			self._sidejobs_highlighted = false
-		end
+		over_button = over_button or self._mini_info_text:inside(x, y)
 		
-		if self._casino_button:inside(x, y) then
-			if not self._casino_highlighted then
-				self._casino_highlighted = true
-				self._casino_button:set_color(tweak_data.screen_colors.button_stage_2)
-				managers.menu_component:post_event("highlight")
-			end
-			inside = true
-		else
-			self._casino_button:set_color(tweak_data.screen_colors.button_stage_3)
-			self._casino_highlighted = false
-		end
-		
-		if self._filter_button:inside(x, y) then
-			if not self._filter_highlighted then
-				self._filter_highlighted = true
-				self._filter_button:set_color(tweak_data.screen_colors.button_stage_2)
-				managers.menu_component:post_event("highlight")
-			end
-			inside = true
-		else
-			self._filter_button:set_color(tweak_data.screen_colors.button_stage_3)
-			self._filter_highlighted = false
-		end
-		
-		if self._refresh_button:inside(x, y) then
-			if not self._refresh_highlighted then
-				self._refresh_highlighted = true
-				self._refresh_button:set_color(tweak_data.screen_colors.button_stage_2)
-				managers.menu_component:post_event("highlight")
-			end
-			inside = true
-		else
-			self._refresh_button:set_color(tweak_data.screen_colors.button_stage_3)
-			self._refresh_highlighted = false
-		end
-		
-		inside = inside or self._mini_info_text:inside(x, y)
-		local inside2 = self._button_panel:inside(x, y)
-		return inside or inside2, inside and "link" or inside2 and "arrow"
+		local inside_btnpanel = self._button_panel:inside(x, y)
+
+		return (over_button ~= nil) or inside_btnpanel, over_button and "link" or inside_btnpanel and "arrow"
 	end
 
 elseif requiredScript == "lib/managers/menu/nodes/menunodeserverlist" then
@@ -1186,7 +1230,7 @@ elseif requiredScript == "lib/managers/menu/nodes/menunodeserverlist" then
 			proportions = 1.7,
 			align = "right"
 		})
-		self:_add_column({		-- Difficulty
+		self:_add_column({		-- Difficulty, State name
 			text = string.upper(""),
 			proportions = 1.3,
 			align = "right"

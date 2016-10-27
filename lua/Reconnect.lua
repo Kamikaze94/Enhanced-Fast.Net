@@ -1,4 +1,19 @@
-if RequiredScript == "lib/managers/crimenetmanager" then
+local requiredScript = string.lower(RequiredScript)
+
+if requiredScript == "lib/managers/menumanager" then
+	Hooks:Add("MenuManagerBuildCustomMenus", "FastNet_MenuManager_AddReconnectKeybind", function( menu_manager, nodes )
+		local key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
+		MenuHelper:AddKeybinding({
+			id = "Reconnect_key",
+			title = "Reconnect Key",
+			connection_name = "Reconnect_key",
+			button = key,
+			binding = key,
+			menu_id = FastNet.keybinds_menu,
+			localized = false,
+		})
+	end)
+elseif requiredScript == "lib/managers/crimenetmanager" then
 
 	Hooks:PostHook(CrimeNetGui, "init", "FastNet_CrimeNetGui_init", function(self, ws, fullscreeen_ws, node)
 			if not FastNet.settings.show_reconnect or node:parameters().no_servers then return end
@@ -46,14 +61,14 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 			return
 		end
 	end)
-elseif string.lower(RequiredScript) == "lib/managers/menu/crimenetfiltersgui" then
+elseif requiredScript == "lib/managers/menu/crimenetfiltersgui" then
 	local filter_close_cbk = CrimeNetFiltersGui.close
 
 	function CrimeNetFiltersGui:close()
 		filter_close_cbk(self)
 		managers.network.matchmake:search_lobby(Global.game_settings.search_friends_only)
 	end
-elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
+elseif requiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 	function NetworkMatchMakingSTEAM:join_server_with_check(room_id, is_invite)
 		managers.menu:show_joining_lobby_dialog()
 		local lobby = Steam:lobby(room_id)
@@ -101,7 +116,7 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 			f()
 		end
 	end
-elseif string.lower(RequiredScript) == "lib/managers/menu/menucomponentmanager" then
+elseif requiredScript == "lib/managers/menu/menucomponentmanager" then
 	function MenuComponentManager:crimenet_enabled()
 		if self._crimenet_gui then
 			return self._crimenet_gui:enabled()
@@ -109,7 +124,7 @@ elseif string.lower(RequiredScript) == "lib/managers/menu/menucomponentmanager" 
 			return true
 		end
 	end
-elseif string.lower(RequiredScript) == "lib/network/base/hostnetworksession" then
+elseif requiredScript == "lib/network/base/hostnetworksession" then
 	local chk_server_joinable_state_actual = HostNetworkSession.chk_server_joinable_state
 	function HostNetworkSession:chk_server_joinable_state(...)
 		chk_server_joinable_state_actual(self, ...)
