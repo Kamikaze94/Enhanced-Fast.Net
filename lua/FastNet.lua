@@ -45,10 +45,12 @@ if requiredScript == "lib/managers/menumanager" then
 
 	function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 		local new_node = node
+		
 		if not info then
 			managers.menu:add_back_button(new_node)
 			return new_node
 		end
+		
 		local room_list = info.room_list
 		local attribute_list = info.attribute_list
 		local dead_list = {}
@@ -189,73 +191,6 @@ if requiredScript == "lib/managers/menumanager" then
 		managers.menu:add_back_button(new_node)
 		return new_node
 	end
-	
-	function MenuCrimeNetFiltersInitiator:refresh_node(node)
-		self:add_filters(node)
-		self:modify_node(node, {})
-		self:update_node(node)
-	end
-
-	-- Setup Extended CrimeNet Filters
-
-	local modify_filter_node_actual = MenuCrimeNetFiltersInitiator.modify_node
-	local clbk_choice_difficulty_filter = MenuCallbackHandler.choice_difficulty_filter
-	local server_count = {10, 20, 30, 40, 50, 60, 70}
-	local difficulties = {"menu_all", "menu_difficulty_normal", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_easy_wish", "menu_difficulty_apocalypse", "menu_difficulty_sm_wish", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_easy_wish", "menu_difficulty_apocalypse"}
-
-	function MenuCrimeNetFiltersInitiator:modify_node(original_node, ...)
-		local res = modify_filter_node_actual(self, original_node, ...)
-		if server_count ~= nil then
-			local max_lobbies = original_node:item("max_lobbies_filter")
-			if max_lobbies ~= nil then
-				max_lobbies:clear_options()
-				for __, count in ipairs(server_count) do
-					max_lobbies:add_option(CoreMenuItemOption.ItemOption:new({
-						_meta = "option",
-						text_id = tostring(count),
-						value = count,
-						localize = false
-					}))
-				end
-				max_lobbies:_show_options(nil)
-			end
-		end
-
-		if difficulties ~= nil then
-			local diff_filter = original_node:item("difficulty_filter")
-			if diff_filter ~= nil then
-				diff_filter:clear_options()
-				for k, v in ipairs(difficulties) do
-					diff_filter:add_option(CoreMenuItemOption.ItemOption:new({
-						_meta = "option",
-						text_id = managers.localization:text(v) .. (k > 8 and " +" or ""),
-						value = k,
-						localize = false
-					}))
-				end
-				diff_filter:_show_options(nil)
-				local matchmake_filters = managers.network.matchmake:lobby_filters()
-				if matchmake_filters and matchmake_filters.difficulty then 
-					diff_filter:set_value(matchmake_filters.difficulty.value + (matchmake_filters.difficulty.comparision_type == "equal" and 0 or 6))
-				end
-			end
-		end
-
-		return res
-	end
-
-	function MenuCallbackHandler:choice_difficulty_filter(item)
-		local diff_filter = item:value()
-		clbk_choice_difficulty_filter(self, item)
-		local comp = "equal"
-		if diff_filter > 8 then
-			comp = "equalto_or_greater_than"
-			diff_filter = diff_filter - 6
-		elseif diff_filter <= 1 then
-			diff_filter = -1
-		end
-		managers.network.matchmake:add_lobby_filter("difficulty", diff_filter, comp)
-	end
 
 elseif requiredScript == "lib/managers/menu/menunodegui" then
 
@@ -265,18 +200,20 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 		self.orig._highlight_row_item(self, row_item, mouse_over)
 		if row_item then
 			if row_item.type == "server_column" then
+				local item_params = row_item.item:parameters()
 				for i, gui in ipairs(row_item.gui_columns) do
-					local item_params = row_item.item:parameters()
-					if i == 1 then 
-						gui:set_color(item_params.friend and tweak_data.screen_colors.friend_color or row_item.color)
-					elseif i == 2 then 
-						gui:set_color(item_params.pro and tweak_data.screen_colors.pro_color or item_params.mutators and tweak_data.screen_colors.mutators_color_text or row_item.color)
+					if i == 1 and item_params.friend then 
+						gui:set_color(tweak_data.screen_colors.friend_color)
+					elseif i == 2 and item_params.pro then 
+						gui:set_color(tweak_data.screen_colors.pro_color)
+					else
+						gui:set_color(item_params.mutators and tweak_data.screen_colors.mutators_color_text or row_item.color)
 					end
 					gui:set_font(Idstring(row_item.font))
 				end
 				if row_item.difficulty_icons then
 					for i, gui in pairs(row_item.difficulty_icons) do
-						gui:set_color(row_item.color)
+						gui:set_color(item_params.mutators and Color.white or row_item.color)
 					end
 				end
 				row_item.gui_info_panel:set_visible(true)
@@ -288,12 +225,14 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 		self.orig._fade_row_item(self, row_item)
 		if row_item then
 			if row_item.type == "server_column" then
+				local item_params = row_item.item:parameters()
 				for i, gui in ipairs(row_item.gui_columns) do
-					local item_params = row_item.item:parameters()
-					if i == 1 then 
-						gui:set_color(item_params.friend and tweak_data.screen_colors.friend_color or row_item.color)
-					elseif i == 2 then 
-						gui:set_color(item_params.pro and tweak_data.screen_colors.pro_color or item_params.mutators and tweak_data.screen_colors.mutators_color or row_item.color)
+					if i == 1 and item_params.friend then 
+						gui:set_color(tweak_data.screen_colors.friend_color)
+					elseif i == 2 and item_params.pro then 
+						gui:set_color(tweak_data.screen_colors.pro_color)
+					else
+						gui:set_color(item_params.mutators and tweak_data.screen_colors.mutators_color or row_item.color)
 					end
 					gui:set_font(Idstring(row_item.font))
 				end
@@ -309,7 +248,7 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 
 	function MenuNodeGui._create_legends(self, node)
 		self.orig._create_legends(self, node)
-		local is_pc = managers.menu:is_pc_controller() --Display legend, not needed anymore...
+		local is_pc = managers.menu:is_pc_controller()
 		local has_pc_legend = false
 		local visible_callback_name, visible_callback
 		local t_text = ""
@@ -322,10 +261,10 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 			if (not is_pc or legend.pc) and (not visible_callback or visible_callback(self)) then
 				has_pc_legend = has_pc_legend or legend.pc
 				local spacing = i > 1 and "  |  " or ""
-				t_text = t_text .. spacing .. utf8.to_upper(managers.localization:text(legend.string_id, {
+				t_text = t_text .. spacing .. managers.localization:to_upper_text(legend.string_id, {
 					BTN_UPDATE = managers.localization:btn_macro("menu_update") or managers.localization:get_default_macro("BTN_Y"),
 					BTN_BACK = managers.localization:btn_macro("back")
-				}))
+				})
 			end
 		end
 		local text = self._legends_panel:child(0)
@@ -424,7 +363,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		local font_size = tweak_data.menu.pd2_small_font_size
 		self._server_title = self.safe_rect_panel:text({
 			name = "server_title",
-			text = utf8.to_upper(managers.localization:text("menu_lobby_server_title")):sub(0, -2) .. ": ",
+			text = managers.localization:to_upper_text("menu_lobby_server_title"):sub(0, -2) .. ": ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -435,7 +374,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._server_info_title = self.safe_rect_panel:text({
 			name = "server_info_title",
-			text = utf8.to_upper(managers.localization:text("menu_lobby_server_state_title")) .. " ",
+			text = managers.localization:to_upper_text("menu_lobby_server_state_title") .. " ",
 			font = self.font,
 			font_size = font_size,
 			align = "left",
@@ -446,7 +385,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._level_title = self.safe_rect_panel:text({
 			name = "level_title",
-			text = utf8.to_upper(managers.localization:text("menu_lobby_campaign_title")) .. " ",
+			text = managers.localization:to_upper_text("menu_lobby_campaign_title") .. " ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -457,7 +396,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._difficulty_title = self.safe_rect_panel:text({
 			name = "difficulty_title",
-			text = utf8.to_upper(managers.localization:text("menu_lobby_difficulty_title")) .. " ",
+			text = managers.localization:to_upper_text("menu_lobby_difficulty_title") .. " ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -468,7 +407,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._job_plan_title = self.safe_rect_panel:text({
 			name = "job_plan_title",
-			text = utf8.to_upper(managers.localization:text("menu_preferred_plan")) .. ": ",
+			text = managers.localization:to_upper_text("menu_preferred_plan") .. ": ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -479,7 +418,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._days_title = self.safe_rect_panel:text({
 			name = "days_title",
-			text = utf8.to_upper(managers.localization:text("cn_menu_contract_length"):sub(10, -1)) .. ":  ",
+			text = managers.localization:to_upper_text("cn_menu_contract_length"):sub(10, -1) .. ":  ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -490,7 +429,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._kick_title = self.safe_rect_panel:text({
 			name = "kick_title",
-			text = utf8.to_upper(managers.localization:text("menu_kicking_allowed_option")) .. ":  ",
+			text = managers.localization:to_upper_text("menu_kicking_allowed_option") .. ":  ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -730,6 +669,15 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			row_item.gui_columns = {}
 			local x = 0
 			for i, data in ipairs(columns) do
+				local color = row_item.color
+				if i == 1 and row_item.item:parameters().friend then
+					color = tweak_data.screen_colors.friend_color
+				elseif i == 2 and row_item.item:parameters().pro then
+					color = tweak_data.screen_colors.pro_color
+				elseif row_item.item:parameters().mutators then
+					color = tweak_data.screen_colors.mutators_color
+				end
+				
 				local text = row_item.gui_panel:text({
 					font_size = tweak_data.menu.server_list_font_size,
 					x = row_item.position.x,
@@ -739,7 +687,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 					vertical = "center",
 					font = row_item.font,
 					font_size = math.round(row_item.font_size * 0.77),
-					color = (i == 2 and row_item.item:parameters().pro and tweak_data.screen_colors.pro_color or i == 2 and row_item.item:parameters().mutators and tweak_data.screen_colors.mutators_color or i == 1 and row_item.item:parameters().friend and tweak_data.screen_colors.friend_color or row_item.color),
+					color = color,
 					layer = self.layers.items,
 					text = row_item.item:parameters().columns[i]
 				})
@@ -783,7 +731,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			
 			local level_id = row_item.item:parameters().level_id
-			local days = row_item.item:parameters().days
 			local mutators = row_item.item:parameters().mutators or {}
 			local mutators_list = {}
 			local mutators_text = ""
@@ -800,7 +747,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 					return a < b
 				end)
 				for i, mutator in ipairs(mutators_list) do
-					mutators_text = string.format("%s%s", mutators_text, (mutator .. (i > 1 and "\n" or "")))
+					mutators_text = string.format("%s%s", mutators_text, (mutator .. (i < #mutators_list and "\n" or "")))
 				end
 			end
 			
@@ -864,6 +811,18 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				h = font_size,
 				layer = 1
 			})
+			row_item.server_mutators_text = row_item.gui_info_panel:text({
+				name = "server_mutators_text",
+				text = utf8.to_upper(row_item.item:parameters().mutators and "[MUTATORS]" or ""),
+				font = tweak_data.menu.pd2_small_font,
+				color = tweak_data.screen_colors.mutators_color_text,
+				font_size = font_size,
+				align = "left",
+				vertical = "center",
+				w = 256,
+				h = font_size,
+				layer = 1
+			})
 			row_item.server_info_text = row_item.gui_info_panel:text({
 				name = "server_info_text",
 				text = utf8.to_upper(row_item.item:parameters().state_name) .. " " .. tostring(row_item.item:parameters().num_plrs) .. "/4 ",
@@ -904,7 +863,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			row_item.difficulty_text = row_item.gui_info_panel:text({
 				name = "difficulty_text",
-				text = utf8.to_upper(managers.localization:text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty])),
+				text = managers.localization:to_upper_text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty]),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -917,7 +876,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			row_item.job_plan_text = row_item.gui_info_panel:text({
 				name = "job_plan_text",
-				text = utf8.to_upper(managers.localization:text(row_item.item:parameters().job_plan_name)),
+				text = managers.localization:text(row_item.item:parameters().job_plan_name),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -930,7 +889,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			row_item.days_text = row_item.gui_info_panel:text({
 				name = "days_text",
-				text = utf8.to_upper(days),
+				text = utf8.to_upper(row_item.item:parameters().days),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -942,7 +901,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			})
 			row_item.kick_text = row_item.gui_info_panel:text({
 				name = "kick_text",
-				text = utf8.to_upper(managers.localization:text(row_item.item:parameters().kick_option_name)),
+				text = managers.localization:to_upper_text(row_item.item:parameters().kick_option_name),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -954,7 +913,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			})
 			row_item.mutators_title = row_item.gui_info_panel:text({
 				name = "mutators_title",
-				text = utf8.to_upper(managers.localization:text("menu_mutators")) .. ":  ",
+				text = managers.localization:to_upper_text("menu_mutators") .. ":  ",
 				font = tweak_data.menu.pd2_small_font,
 				font_size = font_size,
 				align = "left",
@@ -1006,6 +965,12 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		row_item.server_friend_text:set_lefttop(row_item.server_text:righttop())
 		row_item.server_friend_text:set_w(row_item.gui_info_panel:w())
 		row_item.server_friend_text:set_position(math.round(row_item.server_friend_text:x()), math.round(row_item.server_friend_text:y()))
+		local _, _, w, _ = row_item.server_friend_text:text_rect()
+		row_item.server_friend_text:set_w(w)
+		
+		row_item.server_mutators_text:set_lefttop(row_item.server_friend_text:righttop())
+		row_item.server_mutators_text:set_w(row_item.gui_info_panel:w())
+		row_item.server_mutators_text:set_position(math.round(row_item.server_mutators_text:x()), math.round(row_item.server_mutators_text:y()))
 		
 		row_item.server_info_text:set_lefttop(self._server_info_title:righttop())
 		row_item.server_info_text:set_w(row_item.gui_info_panel:w())
@@ -1237,6 +1202,4 @@ elseif requiredScript == "lib/managers/menu/nodes/menunodeserverlist" then
 			align = "center"
 		})
 	end
-elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
-
 end

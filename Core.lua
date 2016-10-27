@@ -9,21 +9,19 @@ if not _G.FastNet then
 		show_reconnect 		= true,		--Show reconnect Button
 		last_lobby_id = nil
 	}
-end
 
-FastNet.hook_files = {
-	["lib/managers/menu/renderers/menunodetablegui"] = "lua/FastNet.lua",
-	["lib/managers/menu/nodes/menunodeserverlist"] = "lua/FastNet.lua",
-	["lib/managers/menu/menunodegui"] = "lua/FastNet.lua",
-	["lib/managers/menumanager"] = "lua/FastNet.lua",
-	["lib/network/matchmaking/networkmatchmakingsteam"] = { "lua/Reconnect.lua", "lua/FastNet.lua" },
-	["lib/managers/menu/menucomponentmanager"] = "lua/Reconnect.lua",
-	["lib/network/base/hostnetworksession"] = "lua/Reconnect.lua",
-	["lib/managers/crimenetmanager"] = "lua/Reconnect.lua",
-	["lib/managers/menu/crimenetfiltersgui"] = "lua/Reconnect.lua",
-}
-
-if not FastNet.setup then	
+	FastNet.hook_files = {
+		["lib/managers/menu/renderers/menunodetablegui"] = "lua/FastNet.lua",
+		["lib/managers/menu/nodes/menunodeserverlist"] = "lua/FastNet.lua",
+		["lib/managers/menu/menunodegui"] = "lua/FastNet.lua",
+		["lib/managers/menumanager"] = { "lua/FastNet.lua", "lua/ExtendedFilters.lua" }
+		["lib/network/matchmaking/networkmatchmakingsteam"] = { "lua/Reconnect.lua", "lua/ExtendedFilters.lua" },
+		["lib/managers/menu/menucomponentmanager"] = "lua/Reconnect.lua",
+		["lib/network/base/hostnetworksession"] = "lua/Reconnect.lua",
+		["lib/managers/crimenetmanager"] = "lua/Reconnect.lua",
+		["lib/managers/menu/crimenetfiltersgui"] = "lua/Reconnect.lua",
+	}
+	
 	function FastNet:Load()
 		local file = io.open(self.save_path, "r")
 		if file then
@@ -53,7 +51,6 @@ if not FastNet.setup then
 	end
 	
 	FastNet:Load()
-	FastNet.setup = true
 end
 
 if RequiredScript then
@@ -102,11 +99,6 @@ if Hooks then
 			menu_id = FastNet.keybinds_menu,
 			localized = false,
 		})
-		
-		local filter_node = nodes["crimenet_filters"]
-		if filter_node then	
-			
-		end
 		
 		local arugements = {
 			_meta = "node",
@@ -165,7 +157,7 @@ if Hooks then
 				name = "fast_net",
 				text_id = "fast_net_title",
 				--help_id = "fast_net_help",
-				callback = "find_online_games",
+				callback = "play_online_game find_online_games",
 				next_node = FastNet.fastnetmenu,
 			}
 			local new_item = parent_menu:create_item(data, params)
