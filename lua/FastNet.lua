@@ -47,7 +47,7 @@ if requiredScript == "lib/managers/menumanager" then
 				local params = {
 					name = "fast_net_friends",
 					text_id = "fast_net_friends_title",
-					--help_id = "fast_net_help",
+					help_id = "fast_net_help",
 					callback = "find_online_games_with_friends",
 					next_node = FastNet.fastnetmenu,
 				}
@@ -60,7 +60,7 @@ if requiredScript == "lib/managers/menumanager" then
 			local params = {
 				name = "fast_net",
 				text_id = "fast_net_title",
-				--help_id = "fast_net_help",
+				help_id = "fast_net_help",
 				callback = "play_online_game find_online_games",
 				next_node = FastNet.fastnetmenu,
 			}
@@ -145,7 +145,6 @@ if requiredScript == "lib/managers/menumanager" then
 				local job_id = tweak_data.narrative:get_job_name_from_index(math.floor(job_index))
 				local job_name = job_id and tweak_data.narrative.jobs[job_id] and managers.localization:text(tweak_data.narrative.jobs[job_id].name_id) or "CONTRACTLESS"
 				local job_days = job_id and (tweak_data.narrative.jobs[job_id].job_wrapper and  table.maxn(tweak_data.narrative.jobs[tweak_data.narrative.jobs[job_id].job_wrapper[1]].chain) or table.maxn(tweak_data.narrative.jobs[job_id].chain)) or 1
-				local is_pro = job_id and (tweak_data.narrative.jobs[job_id].professional and tweak_data.narrative.jobs[job_id].professional or false) or false
 				local difficulty_num = attributes_numbers[2]
 				local difficulty = tweak_data:index_to_difficulty(difficulty_num) or "error"
 				local state_string_id = tweak_data:index_to_server_state(attributes_numbers[4])
@@ -178,7 +177,6 @@ if requiredScript == "lib/managers/menumanager" then
 							tostring(num_plrs) .. "/4 ",
 							(job_plan == 1 and utf8.char(57364) or job_plan == 2 and utf8.char(57363) or "")
 						},
-						pro = is_pro,
 						days = job_days,
 						level_name = job_id,
 						real_level_name = display_job,
@@ -275,8 +273,6 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 				for i, gui in ipairs(row_item.gui_columns) do
 					if i == 1 and item_params.friend then 
 						gui:set_color(tweak_data.screen_colors.friend_color)
-					elseif i == 2 and item_params.pro then 
-						gui:set_color(tweak_data.screen_colors.pro_color)
 					else
 						gui:set_color(item_params.mutators and tweak_data.screen_colors.mutators_color_text or row_item.color)
 					end
@@ -300,8 +296,6 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 				for i, gui in ipairs(row_item.gui_columns) do
 					if i == 1 and item_params.friend then 
 						gui:set_color(tweak_data.screen_colors.friend_color)
-					elseif i == 2 and item_params.pro then 
-						gui:set_color(tweak_data.screen_colors.pro_color)
 					else
 						gui:set_color(item_params.mutators and tweak_data.screen_colors.mutators_color or row_item.color)
 					end
@@ -556,7 +550,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			h = self.safe_rect_panel:h() - self._info_bg_rect:h()
 		})
 
-		
 		self._mini_info_text = self._button_panel:text({
 			name = "players_online_text",
 			x = self._button_panel:w() - tweak_data.menu.info_padding * 12,
@@ -751,8 +744,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				local color = row_item.color
 				if i == 1 and row_item.item:parameters().friend then
 					color = tweak_data.screen_colors.friend_color
-				elseif i == 2 and row_item.item:parameters().pro then
-					color = tweak_data.screen_colors.pro_color
 				elseif row_item.item:parameters().mutators then
 					color = tweak_data.screen_colors.mutators_color
 				end
@@ -927,19 +918,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				layer = 1
 			})
 			
-			row_item.level_pro_text = row_item.gui_info_panel:text({
-				name = "level_pro_text",
-				text = utf8.to_upper(row_item.item:parameters().pro and "PRO JOB" or ""),
-				font = tweak_data.menu.pd2_small_font,
-				color = tweak_data.screen_colors.pro_color,
-				font_size = font_size,
-				align = "left",
-				vertical = "center",
-				w = 256,
-				h = font_size,
-				layer = 1
-			})
-			
 			row_item.difficulty_text = row_item.gui_info_panel:text({
 				name = "difficulty_text",
 				text = managers.localization:to_upper_text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty]),
@@ -1060,10 +1038,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		row_item.level_text:set_w(w)
 		row_item.level_text:set_position(math.round(row_item.level_text:x()), math.round(row_item.level_text:y()))
 		
-		row_item.level_pro_text:set_lefttop(row_item.level_text:righttop())
-		row_item.level_pro_text:set_w(row_item.gui_info_panel:w())
-		row_item.level_pro_text:set_position(math.round(row_item.level_pro_text:x()), math.round(row_item.level_pro_text:y()))
-		
 		row_item.days_text:set_lefttop(self._days_title:righttop())
 		row_item.days_text:set_w(row_item.gui_info_panel:w())
 		row_item.days_text:set_position(math.round(row_item.days_text:x()), math.round(row_item.days_text:y()))
@@ -1154,7 +1128,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 	end
 
 	function MenuNodeTableGui:key_press(o, k)
-		if managers.network and managers.network:session() and not Network:is_server() then return end
+		if managers.network and managers.network:session() and Network:is_server() then return end
 		if managers.menu_component and managers.menu_component.crimenet_enabled and not managers.menu_component:crimenet_enabled() then return end
 		
 		local reconnect_key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"

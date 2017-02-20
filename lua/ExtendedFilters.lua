@@ -5,7 +5,7 @@ if requiredScript == "lib/managers/menumanager" then
 	local modify_filter_node_actual = MenuCrimeNetFiltersInitiator.modify_node
 	local clbk_choice_difficulty_filter = MenuCallbackHandler.choice_difficulty_filter
 	local server_count = {10, 20, 30, 40, 50, 60, 70}
-	local difficulties = {"menu_all", "menu_difficulty_normal", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_easy_wish", "menu_difficulty_apocalypse", "menu_difficulty_sm_wish", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_easy_wish", "menu_difficulty_apocalypse"}
+	local difficulties = {"menu_all", "menu_difficulty_normal", "menu_difficulty_hard", "menu_difficulty_very_hard", "menu_difficulty_overkill", "menu_difficulty_easy_wish", "menu_difficulty_apocalypse", "menu_difficulty_sm_wish"}
 
 	function MenuCrimeNetFiltersInitiator:modify_node(original_node, ...)
 		local res = modify_filter_node_actual(self, original_node, ...)
@@ -32,7 +32,7 @@ if requiredScript == "lib/managers/menumanager" then
 				for k, v in ipairs(difficulties) do
 					diff_filter:add_option(CoreMenuItemOption.ItemOption:new({
 						_meta = "option",
-						text_id = managers.localization:text(v) .. (k > 8 and " +" or ""),
+						text_id = managers.localization:text(v),
 						value = k,
 						localize = false
 					}))
