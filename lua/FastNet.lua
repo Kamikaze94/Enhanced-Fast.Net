@@ -428,7 +428,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		local font_size = tweak_data.menu.pd2_small_font_size
 		self._server_title = self.safe_rect_panel:text({
 			name = "server_title",
-			text = managers.localization:to_upper_text("menu_lobby_server_title"):sub(0, -2),
+			text = managers.localization:to_upper_text("menu_lobby_server_title"):sub(0, -2) .. " ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
