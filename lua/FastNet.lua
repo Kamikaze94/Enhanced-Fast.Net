@@ -428,7 +428,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		local font_size = tweak_data.menu.pd2_small_font_size
 		self._server_title = self.safe_rect_panel:text({
 			name = "server_title",
-			text = managers.localization:to_upper_text("menu_lobby_server_title"):sub(0, -2) .. ": ",
+			text = managers.localization:to_upper_text("menu_lobby_server_title"):sub(0, -2),
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -439,7 +439,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._server_info_title = self.safe_rect_panel:text({
 			name = "server_info_title",
-			text = managers.localization:to_upper_text("menu_lobby_server_state_title") .. " ",
+			text = managers.localization:to_upper_text("menu_lobby_server_state_title"),
 			font = self.font,
 			font_size = font_size,
 			align = "left",
@@ -450,7 +450,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._level_title = self.safe_rect_panel:text({
 			name = "level_title",
-			text = managers.localization:to_upper_text("menu_lobby_campaign_title") .. " ",
+			text = managers.localization:to_upper_text("menu_lobby_campaign_title"),
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -461,7 +461,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._difficulty_title = self.safe_rect_panel:text({
 			name = "difficulty_title",
-			text = managers.localization:to_upper_text("menu_lobby_difficulty_title") .. " ",
+			text = managers.localization:to_upper_text("menu_lobby_difficulty_title"),
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -483,7 +483,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._days_title = self.safe_rect_panel:text({
 			name = "days_title",
-			text = managers.localization:to_upper_text("cn_menu_contract_length"):sub(10, -1) .. ":  ",
+			text = managers.localization:to_upper_text("cn_menu_contract_length"):sub(10, -1) .. ": ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
@@ -494,7 +494,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		})
 		self._kick_title = self.safe_rect_panel:text({
 			name = "kick_title",
-			text = managers.localization:to_upper_text("menu_kicking_allowed_option") .. ":  ",
+			text = managers.localization:to_upper_text("menu_kicking_allowed_option") .. ": ",
 			font = tweak_data.menu.pd2_small_font,
 			font_size = font_size,
 			align = "left",
