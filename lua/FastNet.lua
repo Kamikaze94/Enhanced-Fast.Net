@@ -1128,7 +1128,9 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 	end
 
 	function MenuNodeTableGui:key_press(o, k)
-		if managers.network and managers.network:session() and Network:is_server() then return end
+		if managers.network and managers.network:session() then
+			if Network:is_client() or Network:is_server() then return end
+		end
 		if managers.menu_component and managers.menu_component.crimenet_enabled and not managers.menu_component:crimenet_enabled() then return end
 		
 		local reconnect_key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
