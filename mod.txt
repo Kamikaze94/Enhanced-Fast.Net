@@ -3,7 +3,7 @@
     "description":"Enhanced version, based on LASTBULLET_GREAT BIG BUSHY BEARD's FastNet Standalone. \nIt also includes Luffy's Reconnect to server Skript and Stale Lobby Fix made by Shn20.",
     "author":"Kamikaze94",
     "contact":"https://github.com/Kamikaze94/Enhanced-Fast.Net",
-    "version":"2.00",
+    "version":"3.00",
     "hooks":[
         {
             "hook_id":"lib/managers/menumanager",
