@@ -76,8 +76,6 @@ if Hooks then
 			["fastnet_settings_help"] = "Configuration of Fast.net",
 			["fastnet_friends_menu_title"] = "Show 'Fast.net Friends'",
 			["fastnet_friends_menu_desc"] = "Show seperate 'Fast.net Friends' menu.",
-			["fastnet_save_filter_title"] = "Save Filters",
-			["fastnet_save_filter_desc"] = "Save your filter settings and restore them the next time.",
 			["fastnet_show_reconnect_title"] = "Show Reconnect",
 			["fastnet_show_reconnect_desc"] = "Show a reconnect button in Crime.net and Fast.net",
 		})

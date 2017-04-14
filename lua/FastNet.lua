@@ -47,7 +47,7 @@ if requiredScript == "lib/managers/menumanager" then
 				local params = {
 					name = "fast_net_friends",
 					text_id = "fast_net_friends_title",
-					--help_id = "fast_net_help",
+					help_id = "fast_net_help",
 					callback = "find_online_games_with_friends",
 					next_node = FastNet.fastnetmenu,
 				}
@@ -60,7 +60,7 @@ if requiredScript == "lib/managers/menumanager" then
 			local params = {
 				name = "fast_net",
 				text_id = "fast_net_title",
-				--help_id = "fast_net_help",
+				help_id = "fast_net_help",
 				callback = "play_online_game find_online_games",
 				next_node = FastNet.fastnetmenu,
 			}
@@ -135,6 +135,7 @@ if requiredScript == "lib/managers/menumanager" then
 			local name_str = tostring(room.owner_name)
 			local attributes_numbers = attribute_list[i].numbers
 			local attributes_mutators = attribute_list[i].mutators
+			local attribute_crimespree = attribute_list[i].crime_spree
 			if managers.network.matchmake:is_server_ok(friends_only, room.owner_id, attributes_numbers, nil, attributes_mutators) then
 				dead_list[room.room_id] = nil
 				local host_name = name_str
@@ -159,6 +160,16 @@ if requiredScript == "lib/managers/menumanager" then
 				local job_plan = attributes_numbers[10]
 				local job_plan_suffix = {"plan_loud", "plan_stealth"}
 				local job_plan_name = "menu_" .. (job_plan_suffix[job_plan] or "any")
+				local is_crime_spree = attribute_crimespree and 0 <= attribute_crimespree
+				local crime_spree_mission = attribute_list[i].crime_spree_mission
+				local crime_spree_mission_name = "UNKNOWN"
+				if crime_spree_mission then
+					local mission_data = managers.crime_spree:get_mission(crime_spree_mission)
+					if mission_data then
+						local tweak = tweak_data.levels[mission_data.level.level_id]
+						crime_spree_mission_name = managers.localization:text(tweak and tweak.name_id or "UNKNOWN")
+					end
+				end
 				local is_friend = false
 				for _, friend in ipairs(friends_list) do
 					if friend:id() == room.owner_id then
@@ -173,7 +184,7 @@ if requiredScript == "lib/managers/menumanager" then
 						room_id = room.room_id,
 						columns = {
 							utf8.to_upper(host_name),
-							utf8.to_upper(display_job),
+							utf8.to_upper(is_crime_spree and crime_spree_mission_name or display_job),
 							utf8.to_upper(state_name),
 							tostring(num_plrs) .. "/4 ",
 							(job_plan == 1 and utf8.char(57364) or job_plan == 2 and utf8.char(57363) or "")
@@ -194,6 +205,10 @@ if requiredScript == "lib/managers/menumanager" then
 						kick_option = kick_option,
 						kick_option_name = kick_option_name,
 						friend = is_friend,
+						is_crime_spree = is_crime_spree,
+						crime_spree_level = attribute_crimespree,
+						crime_spree_mission = crime_spree_mission,
+						crime_spree_mission_name = crime_spree_mission_name,
 						mutators = attributes_mutators,
 						callback = "connect_to_lobby",
 						localize = false,
@@ -241,6 +256,14 @@ if requiredScript == "lib/managers/menumanager" then
 					if item:parameters().mutators ~= attributes_mutators then
 						item:parameters().mutators = attributes_mutators
 					end
+					if item:parameters().crime_spree_level ~= attribute_crimespree then
+						item:parameters().is_crime_spree = is_crime_spree
+						item:parameters().crime_spree_level = attribute_crimespree
+					end
+					if item:parameters().crime_spree_mission ~= crime_spree_mission then
+						item:parameters().crime_spree_mission = crime_spree_mission
+						item:parameters().crime_spree_mission_name = crime_spree_mission_name
+					end
 				elseif item then
 					new_node:delete_item(room.room_id)
 				end
@@ -252,7 +275,7 @@ if requiredScript == "lib/managers/menumanager" then
 		end
 		
 		table.sort(new_node:items(), function (a, b) 
-			local a_diff, b_diff = (a:parameters().difficulty_num or 2), (b:parameters().difficulty_num or 2)
+			local a_diff, b_diff 	= (a:parameters().is_crime_spree and a:parameters().crime_spree_level or a:parameters().difficulty_num or 2), (b:parameters().is_crime_spree and b:parameters().crime_spree_level or b:parameters().difficulty_num or 2)
 			local lower_difficulty 	= (a_diff < b_diff)
 			local equal_difficulty 	= (a_diff == b_diff)
 			local less_players 		= (a:parameters().num_plrs or 0) < (b:parameters().num_plrs or 0)
@@ -275,16 +298,26 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 				for i, gui in ipairs(row_item.gui_columns) do
 					if i == 1 and item_params.friend then 
 						gui:set_color(tweak_data.screen_colors.friend_color)
-					elseif i == 2 and item_params.pro then 
+					elseif i == 2 and item_params.pro then
 						gui:set_color(tweak_data.screen_colors.pro_color)
+					elseif item_params.is_crime_spree then
+						--gui:set_color(tweak_data.screen_colors.crime_spree_risk)
+					elseif item_params.mutators then
+						gui:set_color(tweak_data.screen_colors.mutators_color_text)
 					else
-						gui:set_color(item_params.mutators and tweak_data.screen_colors.mutators_color_text or row_item.color)
+						gui:set_color(row_item.color)
 					end
 					gui:set_font(Idstring(row_item.font))
 				end
 				if row_item.difficulty_icons then
 					for i, gui in pairs(row_item.difficulty_icons) do
-						gui:set_color(item_params.mutators and Color.white or row_item.color)
+						if item_params.mutators then
+							gui:set_color(Color.white)
+						elseif item_params.is_crime_spree then
+							gui:set_color(tweak_data.screen_colors.pro_color)
+						else
+							gui:set_color(row_item.color)
+						end
 					end
 				end
 				row_item.gui_info_panel:set_visible(true)
@@ -309,7 +342,11 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 				end
 				if row_item.difficulty_icons then
 					for i, gui in pairs(row_item.difficulty_icons) do
-						gui:set_color(tweak_data.screen_colors.risk)
+						if item_params.is_crime_spree then
+							gui:set_color(tweak_data.screen_colors.crime_spree_risk)
+						else
+							gui:set_color(tweak_data.screen_colors.risk)
+						end
 					end
 				end
 				row_item.gui_info_panel:set_visible(false)
@@ -571,8 +608,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			color = Color.white,
 			layer = self.layers.items,
 			text = "",
-			wrap = true,
-			word_wrap = true
 		})
 		
 		self._safehouse_button = self._button_panel:text({
@@ -588,8 +623,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			color = tweak_data.screen_colors.button_stage_3,
 			layer = self.layers.items,
 			text = managers.localization:text("menu_cn_chill"):upper(),
-			wrap = true,
-			word_wrap = true
 		})
 		self._casino_button = self._button_panel:text({
 			name = "casino_btn",
@@ -604,8 +637,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			color = tweak_data.screen_colors.button_stage_3, --tweak_data.menu.default_disabled_text_color,
 			layer = self.layers.items,
 			text = managers.localization:text("menu_cn_casino"):upper(),
-			wrap = true,
-			word_wrap = true
 		})
 		self._filter_button = self._button_panel:text({
 			name = "filter_btn",
@@ -620,8 +651,6 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			color = tweak_data.screen_colors.button_stage_3,
 			layer = self.layers.items,
 			text = managers.localization:text("menu_cn_filter", {BTN_Y = managers.localization:btn_macro("menu_toggle_filters", true)}):upper(),
-			wrap = true,
-			word_wrap = true
 		})
 		self._refresh_button = self._button_panel:text({
 			name = "refresh_btn",
@@ -636,26 +665,47 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			color = tweak_data.screen_colors.button_stage_3,
 			layer = self.layers.items,
 			text = managers.localization:text("menu_legend_update", {BTN_UPDATE = managers.localization:btn_macro("menu_update", true)}),
-			wrap = true,
-			word_wrap = true
 		})
 		self._host_button = self._button_panel:text({
 			name = "host_btn",
 			x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
-			y = tweak_data.menu.pd2_large_font_size + 4,
-			h = tweak_data.menu.pd2_large_font_size - 8,
+			y = tweak_data.menu.pd2_large_font_size * 0.75,
+			h = tweak_data.menu.pd2_large_font_size - 12,
 			align = "left",
 			halign = "top",
 			vertical = "top",
 			font = tweak_data.menu.pd2_large_font,
-			font_size = tweak_data.menu.pd2_large_font_size - 8,
+			font_size = tweak_data.menu.pd2_large_font_size - 12,
 			color = tweak_data.screen_colors.button_stage_3,
 			layer = self.layers.items,
 			text = managers.localization:text("menu_cn_premium_buy_desc"):upper(),
-			wrap = true,
-			word_wrap = true
 		})
-		
+		self._crimespree_button = self._button_panel:text({
+			name = "crimespree_btn",
+			x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
+			y = tweak_data.menu.pd2_large_font_size * 1.5,
+			w = 100,
+			h = tweak_data.menu.pd2_large_font_size - 14,
+			align = "right",
+			halign = "top",
+			vertical = "top",
+			font = tweak_data.menu.pd2_large_font,
+			font_size = tweak_data.menu.pd2_large_font_size - 14,
+			color = tweak_data.screen_colors.button_stage_3,
+			layer = self.layers.items,
+			text = "",
+		})
+		if managers.crime_spree and managers.crime_spree:in_progress() then
+			local level = managers.localization:text("menu_cs_level", {level = managers.experience:cash_string(managers.crime_spree:spree_level(), "")})
+			local contine_text = string.format("%s (", managers.localization:text("cn_crime_spree_continue"))
+			self._crimespree_button:set_text(string.format("%s%s)", contine_text, level):upper())
+			self._crimespree_button:set_range_color(contine_text:len(), contine_text:len() + level:len() - 2, tweak_data.screen_colors.crime_spree_risk)
+		else
+			self._crimespree_button:set_text(managers.localization:text("cn_crime_spree_start"))
+		end
+		local _, _, w, _ = self._crimespree_button:text_rect()
+		self._crimespree_button:set_w(w)
+		self._crimespree_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
 		if FastNet.settings.show_reconnect then
 			self._reconnect_button = self._button_panel:text({
 				name = "reconnect_btn",
@@ -670,13 +720,11 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				color = tweak_data.screen_colors.button_stage_3,
 				layer = self.layers.items,
 				text = ("[" .. (LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1") .."] " .. managers.localization:text("menu_button_reconnect")):upper(),
-				wrap = true,
-				word_wrap = false
 			})
 			local _, _, w, _ = self._reconnect_button:text_rect()
 			self._reconnect_button:set_w(w+5)
 			self._reconnect_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
-			self._reconnect_button:set_y(self._host_button:y() + self._host_button:h() + 4)
+			self._reconnect_button:set_y(self._refresh_button:y())
 
 		end
 		
@@ -783,28 +831,47 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			local x = row_item.gui_columns[2]:right()
 			local y = 0
-			local difficulty_stars = row_item.item:parameters().difficulty_num
-			local start_difficulty = 3
-			local num_difficulties = 6
-			local spacing = 14
 			row_item.difficulty_icons = {}
-			for i = start_difficulty, difficulty_stars do
-				local difficulty_id = tweak_data:index_to_difficulty(i)
-				local skull_texture = difficulty_id and tweak_data.gui.blackscreen_risk_textures[difficulty_id] or "guis/textures/pd2/risklevel_blackscreen"
-				local skull = row_item.gui_panel:bitmap({
-					texture = skull_texture,
+			if row_item.item:parameters().is_crime_spree then
+				local spree_level = row_item.gui_panel:text({
+					font_size = tweak_data.menu.server_list_font_size,
 					x = x,
 					y = y,
-					w = h,
+					w = 60,
 					h = h,
-					--blend_mode = "add",
+					align = "right",
+					halign = "center",
+					vertical = "center",
+					font = row_item.font,
+					font_size = math.round(row_item.font_size * 0.77),
+					color = tweak_data.screen_colors.crime_spree_risk,
 					layer = self.layers.items,
-					color = tweak_data.screen_colors.risk
+					text = managers.experience:cash_string(tonumber(row_item.item:parameters().crime_spree_level), "") .. managers.localization:get_default_macro("BTN_SPREE_TICKET"),
 				})
-				x = x + (spacing)
-				row_item.difficulty_icons[i] = skull
-				--num_stars = num_stars + 1
-				--skull:set_center_y(row_item.gui_columns[2]:center_y())
+				table.insert(row_item.difficulty_icons, spree_level)
+			else
+				local difficulty_stars = row_item.item:parameters().difficulty_num
+				local start_difficulty = 3
+				local num_difficulties = 6
+				local spacing = 14
+				for i = start_difficulty, difficulty_stars do
+					local difficulty_id = tweak_data:index_to_difficulty(i)
+					local skull_texture = difficulty_id and tweak_data.gui.blackscreen_risk_textures[difficulty_id] or "guis/textures/pd2/risklevel_blackscreen"
+					local skull = row_item.gui_panel:bitmap({
+						texture = skull_texture,
+						x = x,
+						y = y,
+						w = h,
+						h = h,
+						--blend_mode = "add",
+						layer = self.layers.items,
+						color = tweak_data.screen_colors.risk
+					})
+					x = x + (spacing)
+					row_item.difficulty_icons[i] = skull
+					--num_stars = num_stars + 1
+					--skull:set_center_y(row_item.gui_columns[2]:center_y())
+				end
 			end
 			
 			
@@ -902,6 +969,19 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				h = font_size,
 				layer = 1
 			})
+			
+			row_item.crime_spree_text = row_item.gui_info_panel:text({
+				name = "crime_spree_text",
+				text = utf8.to_upper(row_item.item:parameters().is_crime_spree and "[CRIME SPREE]" or ""),
+				font = tweak_data.menu.pd2_small_font,
+				color = tweak_data.screen_colors.crime_spree_risk,
+				font_size = font_size,
+				align = "left",
+				vertical = "center",
+				w = 256,
+				h = font_size,
+				layer = 1
+			})
 			row_item.server_info_text = row_item.gui_info_panel:text({
 				name = "server_info_text",
 				text = utf8.to_upper(row_item.item:parameters().state_name) .. " " .. tostring(row_item.item:parameters().num_plrs) .. "/4 ",
@@ -916,7 +996,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			})
 			row_item.level_text = row_item.gui_info_panel:text({
 				name = "level_text",
-				text = utf8.to_upper(row_item.item:parameters().real_level_name) .. " ",
+				text = utf8.to_upper(row_item.item:parameters().is_crime_spree and row_item.item:parameters().crime_spree_mission_name or row_item.item:parameters().real_level_name) .. " ",
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -942,7 +1022,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			row_item.difficulty_text = row_item.gui_info_panel:text({
 				name = "difficulty_text",
-				text = managers.localization:to_upper_text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty]),
+				text = row_item.item:parameters().is_crime_spree and (managers.experience:cash_string(tonumber(row_item.item:parameters().crime_spree_level), "") .. managers.localization:get_default_macro("BTN_SPREE_TICKET")) or managers.localization:to_upper_text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty]),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -955,7 +1035,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			row_item.job_plan_text = row_item.gui_info_panel:text({
 				name = "job_plan_text",
-				text = managers.localization:text(row_item.item:parameters().job_plan_name),
+				text = managers.localization:to_upper_text(row_item.item:parameters().job_plan_name),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -968,7 +1048,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			row_item.days_text = row_item.gui_info_panel:text({
 				name = "days_text",
-				text = utf8.to_upper(row_item.item:parameters().days),
+				text = utf8.to_upper(math.max(row_item.item:parameters().days, 1)),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -1050,6 +1130,12 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		row_item.server_mutators_text:set_lefttop(row_item.server_friend_text:righttop())
 		row_item.server_mutators_text:set_w(row_item.gui_info_panel:w())
 		row_item.server_mutators_text:set_position(math.round(row_item.server_mutators_text:x()), math.round(row_item.server_mutators_text:y()))
+		local _, _, w, _ = row_item.server_mutators_text:text_rect()
+		row_item.server_mutators_text:set_w(w)
+		
+		row_item.crime_spree_text:set_lefttop(row_item.server_mutators_text:righttop())
+		row_item.crime_spree_text:set_w(row_item.gui_info_panel:w())
+		row_item.crime_spree_text:set_position(math.round(row_item.crime_spree_text:x()), math.round(row_item.crime_spree_text:y()))
 		
 		row_item.server_info_text:set_lefttop(self._server_info_title:righttop())
 		row_item.server_info_text:set_w(row_item.gui_info_panel:w())
@@ -1130,6 +1216,21 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				managers.menu:open_node("crimenet_contract_special", {})
 				managers.menu_component:disable_crimenet()
 				return true
+			elseif self._crimespree_button:inside(x, y) then
+				managers.menu_component:post_event("menu_enter")
+				local node = Global.game_settings.single_player and "crimenet_crime_spree_contract_singleplayer" or "crimenet_crime_spree_contract_host"
+				local data = {
+					{
+						job_id = "crime_spree",
+						difficulty = tweak_data.crime_spree.base_difficulty,
+						difficulty_id = tweak_data.crime_spree.base_difficulty_index,
+						professional = false,
+						competitive = false,
+						customize_contract = false,
+						contract_visuals = {}
+					}
+				}
+				managers.menu:open_node(node, data)
 			elseif self._safehouse_button:inside(x, y) then
 				managers.menu:open_node("custom_safehouse", {})
 				managers.menu_component:disable_crimenet()
@@ -1183,6 +1284,10 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			over_button = self._host_button
 		end
 		
+		if not over_button and self._crimespree_button:inside(x, y) then
+			over_button = self._crimespree_button
+		end
+		
 		if not over_button and self._safehouse_button:inside(x, y) then
 			over_button = self._safehouse_button
 		end
@@ -1214,7 +1319,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		
 		local inside_btnpanel = self._button_panel:inside(x, y)
 
-		return (over_button ~= nil) or inside_btnpanel, over_button and "link" or inside_btnpanel and "arrow"
+		return inside_btnpanel, over_button and "link" or "arrow"
 	end
 
 elseif requiredScript == "lib/managers/menu/nodes/menunodeserverlist" then
