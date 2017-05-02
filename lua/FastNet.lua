@@ -48,7 +48,7 @@ if requiredScript == "lib/managers/menumanager" then
 					name = "fast_net_friends",
 					text_id = "fast_net_friends_title",
 					help_id = "fast_net_help",
-					callback = "find_online_games_with_friends",
+					callback = "play_online_game find_online_games_with_friends",
 					next_node = FastNet.fastnetmenu,
 				}
 				local new_item = parent_menu:create_item(data, params)
@@ -72,7 +72,7 @@ if requiredScript == "lib/managers/menumanager" then
 	end)
 
 	function MenuCallbackHandler:_find_online_games(friends_only)
-		friends_only = friends_only or Global.game_settings.search_friends_only
+		friends_only = friends_only or not FastNet.settings.show_friends_menu and Global.game_settings.search_friends_only
 		if self:is_win32() then
 			local function f(info)
 				print("info in function")
@@ -112,6 +112,13 @@ if requiredScript == "lib/managers/menumanager" then
 		end
 	end
 
+	function MenuCallbackHandler:setup_join_cs_manager(item, ...)
+		local params = item:parameters()
+		if params.is_crime_spree then
+			managers.crime_spree:join_server(params)
+		end
+	end
+
 	function MenuSTEAMHostBrowser:refresh_node(node, info, friends_only)
 		local new_node = node
 		
@@ -135,7 +142,6 @@ if requiredScript == "lib/managers/menumanager" then
 			local name_str = tostring(room.owner_name)
 			local attributes_numbers = attribute_list[i].numbers
 			local attributes_mutators = attribute_list[i].mutators
-			local attribute_crimespree = attribute_list[i].crime_spree
 			if managers.network.matchmake:is_server_ok(friends_only, room.owner_id, attributes_numbers, nil, attributes_mutators) then
 				dead_list[room.room_id] = nil
 				local host_name = name_str
@@ -160,9 +166,10 @@ if requiredScript == "lib/managers/menumanager" then
 				local job_plan = attributes_numbers[10]
 				local job_plan_suffix = {"plan_loud", "plan_stealth"}
 				local job_plan_name = "menu_" .. (job_plan_suffix[job_plan] or "any")
+				local attribute_crimespree = attribute_list[i].crime_spree
 				local is_crime_spree = attribute_crimespree and 0 <= attribute_crimespree
 				local crime_spree_mission = attribute_list[i].crime_spree_mission
-				local crime_spree_mission_name = "UNKNOWN"
+				local crime_spree_mission_name = "CONTRACTLESS"
 				if crime_spree_mission then
 					local mission_data = managers.crime_spree:get_mission(crime_spree_mission)
 					if mission_data then
@@ -206,11 +213,11 @@ if requiredScript == "lib/managers/menumanager" then
 						kick_option_name = kick_option_name,
 						friend = is_friend,
 						is_crime_spree = is_crime_spree,
-						crime_spree_level = attribute_crimespree,
+						crime_spree = attribute_crimespree,
 						crime_spree_mission = crime_spree_mission,
 						crime_spree_mission_name = crime_spree_mission_name,
 						mutators = attributes_mutators,
-						callback = "connect_to_lobby",
+						callback = "setup_join_cs_manager connect_to_lobby",
 						localize = false,
 					}
 					local new_item = new_node:create_item({ type = "ItemServerColumn" }, params)
@@ -256,9 +263,9 @@ if requiredScript == "lib/managers/menumanager" then
 					if item:parameters().mutators ~= attributes_mutators then
 						item:parameters().mutators = attributes_mutators
 					end
-					if item:parameters().crime_spree_level ~= attribute_crimespree then
+					if item:parameters().crime_spree ~= attribute_crimespree then
 						item:parameters().is_crime_spree = is_crime_spree
-						item:parameters().crime_spree_level = attribute_crimespree
+						item:parameters().crime_spree = attribute_crimespree
 					end
 					if item:parameters().crime_spree_mission ~= crime_spree_mission then
 						item:parameters().crime_spree_mission = crime_spree_mission
@@ -275,7 +282,7 @@ if requiredScript == "lib/managers/menumanager" then
 		end
 		
 		table.sort(new_node:items(), function (a, b) 
-			local a_diff, b_diff 	= (a:parameters().is_crime_spree and a:parameters().crime_spree_level or a:parameters().difficulty_num or 2), (b:parameters().is_crime_spree and b:parameters().crime_spree_level or b:parameters().difficulty_num or 2)
+			local a_diff, b_diff 	= (a:parameters().is_crime_spree and a:parameters().crime_spree or a:parameters().difficulty_num or 2), (b:parameters().is_crime_spree and b:parameters().crime_spree or b:parameters().difficulty_num or 2)
 			local lower_difficulty 	= (a_diff < b_diff)
 			local equal_difficulty 	= (a_diff == b_diff)
 			local less_players 		= (a:parameters().num_plrs or 0) < (b:parameters().num_plrs or 0)
@@ -694,6 +701,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			color = tweak_data.screen_colors.button_stage_3,
 			layer = self.layers.items,
 			text = "",
+			visible = managers.crime_spree:unlocked(),
 		})
 		if managers.crime_spree and managers.crime_spree:in_progress() then
 			local level = managers.localization:text("menu_cs_level", {level = managers.experience:cash_string(managers.crime_spree:spree_level(), "")})
@@ -846,7 +854,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 					font_size = math.round(row_item.font_size * 0.77),
 					color = tweak_data.screen_colors.crime_spree_risk,
 					layer = self.layers.items,
-					text = managers.experience:cash_string(tonumber(row_item.item:parameters().crime_spree_level), "") .. managers.localization:get_default_macro("BTN_SPREE_TICKET"),
+					text = managers.experience:cash_string(tonumber(row_item.item:parameters().crime_spree), "") .. managers.localization:get_default_macro("BTN_SPREE_TICKET"),
 				})
 				table.insert(row_item.difficulty_icons, spree_level)
 			else
@@ -1022,7 +1030,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			
 			row_item.difficulty_text = row_item.gui_info_panel:text({
 				name = "difficulty_text",
-				text = row_item.item:parameters().is_crime_spree and (managers.experience:cash_string(tonumber(row_item.item:parameters().crime_spree_level), "") .. managers.localization:get_default_macro("BTN_SPREE_TICKET")) or managers.localization:to_upper_text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty]),
+				text = row_item.item:parameters().is_crime_spree and (managers.experience:cash_string(tonumber(row_item.item:parameters().crime_spree), "") .. managers.localization:get_default_macro("BTN_SPREE_TICKET")) or managers.localization:to_upper_text(tweak_data.difficulty_name_ids[row_item.item:parameters().difficulty]),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.hud.prime_color,
 				font_size = font_size,
@@ -1216,7 +1224,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				managers.menu:open_node("crimenet_contract_special", {})
 				managers.menu_component:disable_crimenet()
 				return true
-			elseif self._crimespree_button:inside(x, y) then
+			elseif self._crimespree_button:visible() and self._crimespree_button:inside(x, y) then
 				managers.menu_component:post_event("menu_enter")
 				local node = Global.game_settings.single_player and "crimenet_crime_spree_contract_singleplayer" or "crimenet_crime_spree_contract_host"
 				local data = {
@@ -1284,7 +1292,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			over_button = self._host_button
 		end
 		
-		if not over_button and self._crimespree_button:inside(x, y) then
+		if not over_button and self._crimespree_button:visible() and self._crimespree_button:inside(x, y) then
 			over_button = self._crimespree_button
 		end
 		
