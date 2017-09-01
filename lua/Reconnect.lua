@@ -1,8 +1,23 @@
-if RequiredScript == "lib/managers/crimenetmanager" then
+local requiredScript = string.lower(RequiredScript)
 
-	Hooks:PostHook(CrimeNetGui, "init", "reinit", function(self, ws, fullscreeen_ws, node)
+if requiredScript == "lib/managers/menumanager" then
+	Hooks:Add("MenuManagerBuildCustomMenus", "FastNet_MenuManager_AddReconnectKeybind", function( menu_manager, nodes )
+		local key = BLT.Keybinds:get_keybind("Reconnect_key") or "f1"
+		MenuHelper:AddKeybinding({
+			id = "Reconnect_key",
+			title = "Reconnect Key",
+			connection_name = "Reconnect_key",
+			button = key,
+			binding = key,
+			menu_id = FastNet.keybinds_menu,
+			localized = false,
+		})
+	end)
+elseif requiredScript == "lib/managers/crimenetmanager" then
+
+	Hooks:PostHook(CrimeNetGui, "init", "FastNet_CrimeNetGui_init", function(self, ws, fullscreeen_ws, node)
 			if not FastNet.settings.show_reconnect or node:parameters().no_servers then return end
-			key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
+			key = BLT.Keybinds:get_keybind("Reconnect_key") or "f1"
 			local reconnect_button = self._panel:text({
 				name = "reconnect_button",
 				text = string.upper("["..key.."] "..managers.localization:text("menu_button_reconnect")),
@@ -20,12 +35,12 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 	end)
 
 	function CrimeNetGui:key_press(o, k)
-		key = LuaModManager:GetPlayerKeybind("Reconnect_key") or "f1"
+		key = BLT.Keybinds:get_keybind("Reconnect_key") or "f1"
 		if k == Idstring(key) and self._panel:child("reconnect_button") then
 			FastNet:reconnect()
 		end
 	end
-	Hooks:PostHook(CrimeNetGui, "mouse_moved", "mouse_move", function(self, o, x, y)
+	Hooks:PostHook(CrimeNetGui, "mouse_moved", "FastNet_CrimeNetGui_mouse_move", function(self, o, x, y)
 		if self._panel:child("reconnect_button") then
 			if self._panel:child("reconnect_button"):inside(x, y) then
 				if not self._reconnect_highlighted then
@@ -40,20 +55,20 @@ if RequiredScript == "lib/managers/crimenetmanager" then
 		end
 	end)
 
-	Hooks:PostHook(CrimeNetGui, "mouse_pressed", "mouse_presse", function(self, o, button, x, y)
+	Hooks:PostHook(CrimeNetGui, "mouse_pressed", "FastNet_CrimeNetGui_mouse_pressed", function(self, o, button, x, y)
 		if self._panel:child("reconnect_button") and self._panel:child("reconnect_button"):inside(x, y) then
 			FastNet:reconnect()    
 			return
 		end
 	end)
-elseif string.lower(RequiredScript) == "lib/managers/menu/crimenetfiltersgui" then
+elseif requiredScript == "lib/managers/menu/crimenetfiltersgui" then
 	local filter_close_cbk = CrimeNetFiltersGui.close
+
 	function CrimeNetFiltersGui:close()
 		filter_close_cbk(self)
-		managers.network.matchmake:save_persistent_settings()
 		managers.network.matchmake:search_lobby(Global.game_settings.search_friends_only)
 	end
-elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
+elseif requiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 	function NetworkMatchMakingSTEAM:join_server_with_check(room_id, is_invite)
 		managers.menu:show_joining_lobby_dialog()
 		local lobby = Steam:lobby(room_id)
@@ -101,60 +116,7 @@ elseif RequiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 			f()
 		end
 	end
-		
-	--Persistent Filter Settings
-	local init_cbk = NetworkMatchMakingSTEAM.init
-	function NetworkMatchMakingSTEAM:init()
-		init_cbk(self)
-		self:_load_persistent_settings()
-	end
-	function NetworkMatchMakingSTEAM:save_persistent_settings()
-		if not FastNet.settings.save_filter then return end
-		local f = "friends_only=" .. tostring(self._search_friends_only or false) .. ", max_lobbies=" .. tostring(self._lobby_return_count) .. ", distance=" .. tostring(self._distance_filter)
-		for k, v in pairs(self._lobby_filters) do
-			if tostring(k) == "difficulty" then
-				f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value + (self._lobby_filters[k].comparision_type == "equal" and 0 or 4)))
-			else
-				f = f .. ", " .. (tostring(k) .. "=" .. tostring(self._lobby_filters[k].value))
-			end
-		end
-		FastNet.settings.filter = f
-		FastNet:Save()
-		--managers.network.matchmake:search_lobby(managers.network.matchmake:search_friends_only())
-	end
-
-	function NetworkMatchMakingSTEAM:_load_persistent_settings()
-		if not FastNet.settings.save_filter then return end
-		FastNet:Load()
-		s = FastNet.settings.filter or ""
-		for key, val in string.gmatch(s, "([%w_]+)=([%w_]+)") do
-			if key and val then
-				if key == "friends_only" then
-					local friends_only = val  == "true" and true or false
-					Global.game_settings.search_friends_only = friends_only
-					self._search_friends_only = friends_only
-				elseif key == "appropriate_jobs" then
-					local appropriate_jobs = val  == "true" and true or false
-					Global.game_settings.search_appropriate_jobs = appropriate_jobs
-					self._search_appropriate_jobs = appropriate_jobs
-				elseif key == "max_lobbies" then
-					self:set_lobby_return_count(tonumber(val))
-				elseif key == "distance" then
-					self:set_distance_filter(tonumber(val))
-				elseif key == "difficulty" then
-					local comp = "equal"
-					if tonumber(val) > 6 then
-						comp = "equalto_or_greater_than"
-						val = tonumber(val) - 4
-					end
-					self:add_lobby_filter(key, tonumber(val), comp)
-				else
-					self:add_lobby_filter(key, tonumber(val), "equal")
-				end
-			end
-		end
-	end
-elseif string.lower(RequiredScript) == "lib/managers/menu/menucomponentmanager" then
+elseif requiredScript == "lib/managers/menu/menucomponentmanager" then
 	function MenuComponentManager:crimenet_enabled()
 		if self._crimenet_gui then
 			return self._crimenet_gui:enabled()
@@ -162,7 +124,7 @@ elseif string.lower(RequiredScript) == "lib/managers/menu/menucomponentmanager" 
 			return true
 		end
 	end
-elseif string.lower(RequiredScript) == "lib/network/base/hostnetworksession" then
+elseif requiredScript == "lib/network/base/hostnetworksession" then
 	local chk_server_joinable_state_actual = HostNetworkSession.chk_server_joinable_state
 	function HostNetworkSession:chk_server_joinable_state(...)
 		chk_server_joinable_state_actual(self, ...)

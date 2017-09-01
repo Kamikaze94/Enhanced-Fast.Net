@@ -1,0 +1,12 @@
+{
+	"fast_net_title" : "Fast.net",
+	"fast_net_help" : "Logge dich ins Fast.net ein und trete anderen bei, schneller als das Licht.",
+	"fast_net_friends_title" : "Fast.net Freunde",
+	"menu_button_reconnect" : "Reconnect",
+	"fastnet_settings_name" : "Fast.net Einstellungen",
+	"fastnet_settings_help" : "Konfiguration von Fast.net",
+	"fastnet_friends_menu_title" : "Zeige 'Fast.net Freunde'",
+	"fastnet_friends_menu_desc" : "Zeige separates 'Fast.net Freunde' Menü.",
+	"fastnet_show_reconnect_title" : "Zeige Reconnect",
+	"fastnet_show_reconnect_desc" : "Zeige einen Reconnect Knopf in Crime.net und Fast.net"
+}

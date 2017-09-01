@@ -1,0 +1,25 @@
+{
+	"menu_id" : "fastnet_settings_menu",
+	"parent_menu_id" : "blt_options",
+	"title" : "fastnet_settings_name",
+	"description" : "fastnet_settings_help",
+	"back_callback" : "FastNet_Save",
+	"items" : [
+		{
+			"type" : "toggle",
+			"id" : "show_friends_menu",
+			"title" : "fastnet_friends_menu_title",
+			"description" : "fastnet_friends_menu_desc",
+			"callback" : "clbk_change_fastnet_setting",
+			"value" : "show_friends_menu"
+		},
+		{
+			"type" : "toggle",
+			"id" : "show_reconnect",
+			"title" : "fastnet_show_reconnect_title",
+			"description" : "fastnet_show_reconnect_desc",
+			"callback" : "clbk_change_fastnet_setting",
+			"value" : "show_reconnect"
+		}
+	]
+}
