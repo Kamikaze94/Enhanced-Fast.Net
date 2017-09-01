@@ -67,19 +67,6 @@ end
 
 if Hooks then
 	Hooks:Add("LocalizationManagerPostInit", "FastNet_Localization", function(loc)
-		loc:add_localized_strings({
-			["fast_net_title"] = "Fast.net",
-			["fast_net_help"] = "Log into Fast.net and join others faster than light.",
-			["fast_net_friends_title"] = "Fast.net Friends",
-			["menu_button_reconnect"] = "Reconnect",
-			["fastnet_settings_name"] = "Fast.net Settings",
-			["fastnet_settings_help"] = "Configuration of Fast.net",
-			["fastnet_friends_menu_title"] = "Show 'Fast.net Friends'",
-			["fastnet_friends_menu_desc"] = "Show seperate 'Fast.net Friends' menu.",
-			["fastnet_show_reconnect_title"] = "Show Reconnect",
-			["fastnet_show_reconnect_desc"] = "Show a reconnect button in Crime.net and Fast.net",
-		})
-		do return end
 		local loc_path = FastNet.mod_path .. "loc/"
 		if file.DirectoryExists( loc_path ) then
 			if _G.PD2KR then

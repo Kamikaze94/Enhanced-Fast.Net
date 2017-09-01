@@ -6,7 +6,7 @@
 	"fastnet_settings_name" : "Fast.net Einstellungen",
 	"fastnet_settings_help" : "Konfiguration von Fast.net",
 	"fastnet_friends_menu_title" : "Zeige 'Fast.net Freunde'",
-	"fastnet_friends_menu_desc" : "Zeige separates 'Fast.net Freunde' Menü.",
+	"fastnet_friends_menu_desc" : "Zeige separaten 'Fast.net Freunde' Menuepunkt.",
 	"fastnet_show_reconnect_title" : "Zeige Reconnect",
 	"fastnet_show_reconnect_desc" : "Zeige einen Reconnect Knopf in Crime.net und Fast.net"
 }

@@ -4,6 +4,7 @@
 	"title" : "fastnet_settings_name",
 	"description" : "fastnet_settings_help",
 	"back_callback" : "FastNet_Save",
+	"focus_changed_callback" : "",
 	"items" : [
 		{
 			"type" : "toggle",
