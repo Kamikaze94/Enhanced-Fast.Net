@@ -1268,7 +1268,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 	function MenuNodeTableGui:key_press(o, k)
 		if managers.network and managers.network:session() and not Network:is_server() then return end
 		if managers.menu_component and managers.menu_component.crimenet_enabled and not managers.menu_component:crimenet_enabled() then return end
-		
+
 		local reconnect_key = BLT.Keybinds:get_keybind("Reconnect_key") or "f1"
 		local type = managers.controller:get_default_wrapper_type()
 		local filter_key = managers.controller:get_settings(type):get_connection("menu_toggle_filters"):get_input_name_list()[1] or "f"
