@@ -9,4 +9,6 @@
 	"fastnet_friends_menu_desc" : "Zeige separaten 'Fast.net Freunde' Menuepunkt.",
 	"fastnet_show_reconnect_title" : "Zeige Reconnect",
 	"fastnet_show_reconnect_desc" : "Zeige einen Reconnect Knopf in Crime.net und Fast.net"
+	
+	"fastnet_mutators_tag" : "[MUTATOREN]"
 }

@@ -970,7 +970,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			})
 			row_item.server_mutators_text = row_item.gui_info_panel:text({
 				name = "server_mutators_text",
-				text = utf8.to_upper(row_item.item:parameters().mutators and "[MUTATORS]" or ""),
+				text = utf8.to_upper(row_item.item:parameters().mutators and managers.localization:text("fastnet_mutators_tag") or ""),
 				font = tweak_data.menu.pd2_small_font,
 				color = tweak_data.screen_colors.mutators_color_text,
 				font_size = font_size,
