@@ -143,7 +143,7 @@ if requiredScript == "lib/managers/menumanager" then
 			local name_str = tostring(room.owner_name)
 			local attributes_numbers = attribute_list[i].numbers
 			local attributes_mutators = attribute_list[i].mutators
-			if managers.network.matchmake:is_server_ok(friends_only, room.owner_id, attributes_numbers, nil, attributes_mutators) then
+			if managers.network.matchmake:is_server_ok(friends_only, room.owner_id, attribute_list[i], nil) then
 				dead_list[room.room_id] = nil
 				local host_name = name_str
 				local level_index, job_index = managers.network.matchmake:_split_attribute_number(attributes_numbers[1], 1000)
@@ -190,6 +190,7 @@ if requiredScript == "lib/managers/menumanager" then
 						name = room.room_id,
 						text_id = name_str,
 						room_id = room.room_id,
+						owner_id = room.owner_id,
 						columns = {
 							utf8.to_upper(host_name),
 							utf8.to_upper(is_crime_spree and crime_spree_mission_name or display_job),
