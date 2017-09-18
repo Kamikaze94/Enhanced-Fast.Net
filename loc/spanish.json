@@ -1,0 +1,12 @@
+{
+	"fast_net_title" : "Fast.net",
+	"fast_net_help" : "Accede a Fast.net, una version ligera de Crime.net",
+	"fast_net_friends_title" : "Fast.net - Amigos",
+	"menu_button_reconnect" : "Re-Conectar",
+	"fastnet_settings_name" : "Ajustes de Fast.Net",
+	"fastnet_settings_help" : "Configuracion de Fast.net",
+	"fastnet_friends_menu_title" : "Mostrar 'Fast.net - Amigos'",
+	"fastnet_friends_menu_desc" : "Mostrar opcion 'Fast.net - Amigos'",
+	"fastnet_show_reconnect_title" : "Mostrar Re-Conectar",
+	"fastnet_show_reconnect_desc" : "Muestra el boton de Re-Conectar en Crime.net y Fast.net"
+}
