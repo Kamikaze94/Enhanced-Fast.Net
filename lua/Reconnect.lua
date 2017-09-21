@@ -77,7 +77,7 @@ elseif requiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 		local function f()
 			print("NetworkMatchMakingSTEAM:join_server_with_check f")
 			lobby:setup_callback(empty)
-			local attributes = self:_lobby_to_numbers(lobby)
+			local attributes = { numbers = self:_lobby_to_numbers(lobby), mutators = nil }
 			if NetworkMatchMakingSTEAM._BUILD_SEARCH_INTEREST_KEY then
 				local ikey = lobby:key_value(NetworkMatchMakingSTEAM._BUILD_SEARCH_INTEREST_KEY)
 				if ikey == "value_missing" or ikey == "value_pending" then
