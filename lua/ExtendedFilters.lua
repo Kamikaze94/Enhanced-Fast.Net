@@ -77,4 +77,21 @@ elseif requiredScript == "lib/network/matchmaking/networkmatchmakingsteam" then
 		end
 		self:add_lobby_filter("difficulty", diff_filter, comp)
 	end
+elseif requiredScript == "lib/managers/crimenetmanager" then
+	local _setup_original = CrimeNetManager._setup
+	function CrimeNetManager:_setup(...)
+		_setup_original(self, ...)
+		
+		if self._presets then
+			for _, preset in ipairs(self._presets) do
+				if preset.difficulty_id > 8 then
+					local min_difficulty = preset.difficulty_id - 6
+					preset.difficulty_id = math.round(min_difficulty + math.rand(8 - min_difficulty))
+				else
+					preset.difficulty_id = preset.difficulty_id - 1
+				end
+				preset.difficulty = tweak_data:index_to_difficulty(preset.difficulty_id)
+			end
+		end
+	end
 end

@@ -18,7 +18,7 @@ if not _G.FastNet then
 		["lib/network/matchmaking/networkmatchmakingsteam"] = { "lua/Reconnect.lua", "lua/ExtendedFilters.lua" },
 		["lib/managers/menu/menucomponentmanager"] = "lua/Reconnect.lua",
 		["lib/network/base/hostnetworksession"] = "lua/Reconnect.lua",
-		["lib/managers/crimenetmanager"] = "lua/Reconnect.lua",
+		["lib/managers/crimenetmanager"] = { "lua/Reconnect.lua", "lua/ExtendedFilters.lua" },
 		["lib/managers/menu/crimenetfiltersgui"] = "lua/Reconnect.lua",
 	}
 	

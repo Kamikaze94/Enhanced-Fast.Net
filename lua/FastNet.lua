@@ -141,7 +141,7 @@ if requiredScript == "lib/managers/menumanager" then
 		local friends_list = Steam:logged_on() and Steam:friends() or {}
 		for i, room in ipairs(room_list) do
 			if managers.network.matchmake:is_server_ok(friends_only, room.owner_id, attribute_list[i], nil) then
-				local host_name = tostring(room.owner_name)
+				local host_name = tostring(room.owner_name) --.. " [" .. (room.owner_level or "N/A") .. "]" -- Infamy isn't given here...
 				local attributes_numbers = attribute_list[i].numbers
 				local attributes_mutators = attribute_list[i].mutators
 				if attributes_numbers then
