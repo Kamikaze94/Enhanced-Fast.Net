@@ -10,5 +10,5 @@
 	"fastnet_show_reconnect_title" : "显示'重连'按钮",
 	"fastnet_show_reconnect_desc" : "在Crime.net和Fast.net中显示重连按钮",
 	
-	"fastnet_mutators_tag" : "[突变模式大厅]"
+	"fastnet_mutators_tag" : "[已启用突变规则]"
 }
