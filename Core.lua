@@ -69,8 +69,19 @@ if Hooks then
 	Hooks:Add("LocalizationManagerPostInit", "FastNet_Localization", function(loc)
 		local loc_path = FastNet.mod_path .. "loc/"
 		if file.DirectoryExists( loc_path ) then
+			local custom_lang
 			if _G.PD2KR then
-				loc:load_localization_file(loc_path .. "korean.json")
+				custom_lang = "korean"
+			else
+				for _, mod in pairs(BLT and BLT.Mods:Mods() or {}) do
+					if mod:GetName() == "ChnMod (Patch)" and mod:IsEnabled() then
+						custom_lang = "chinese"
+						break
+					end
+				end
+			end
+			if custom_lang then
+				loc:load_localization_file(string.format("%s%s.json", loc_path, custom_lang))
 			else
 				for _, filename in pairs(file.GetFiles(loc_path)) do
 					local str = filename:match('^(.*).json$')
