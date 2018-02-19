@@ -1,0 +1,14 @@
+{
+	"fast_net_title" : "Fast.net",
+	"fast_net_help" : "登录到Fast.net然后光速般加入其他人的游戏.",
+	"fast_net_friends_title" : "Fast.net 好友模式",
+	"menu_button_reconnect" : "重连",
+	"fastnet_settings_name" : "Fast.net 设置",
+	"fastnet_settings_help" : "在这里设置Fast.net",
+	"fastnet_friends_menu_title" : "显示 'Fast.net 好友模式'",
+	"fastnet_friends_menu_desc" : "显示分开的 'Fast.net 好友模式'菜单.",
+	"fastnet_show_reconnect_title" : "显示'重连'按钮",
+	"fastnet_show_reconnect_desc" : "在Crime.net和Fast.net中显示重连按钮",
+	
+	"fastnet_mutators_tag" : "[已启用突变规则]"
+}
