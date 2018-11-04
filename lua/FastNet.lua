@@ -156,6 +156,7 @@ if requiredScript == "lib/managers/menumanager" then
 					local is_pro = job_id and (tweak_data.narrative.jobs[job_id].professional and tweak_data.narrative.jobs[job_id].professional or false) or false
 					local difficulty_num = attributes_numbers[2]
 					local difficulty = tweak_data:index_to_difficulty(difficulty_num) or "error"
+					local is_one_down = (tonumber(attribute_list[i].one_down) or 0) == 1
 					local state_string_id = tweak_data:index_to_server_state(attributes_numbers[4])
 					local state_name = state_string_id and managers.localization:text("menu_lobby_server_state_" .. state_string_id) or "UNKNOWN"
 					local display_job = job_name .. ((job_name ~= level_name and job_name ~= "CONTRACTLESS" and level_name ~= "CONTRACTLESS" and job_days > 1) and " (" .. level_name .. ")" or "") 
@@ -208,6 +209,7 @@ if requiredScript == "lib/managers/menumanager" then
 							job_plan = job_plan,
 							job_plan_name = job_plan_name,
 							difficulty_num = difficulty_num or 2,
+							is_one_down = is_one_down,
 							host_name = host_name,
 							state = state,
 							num_plrs = num_plrs,
@@ -242,6 +244,9 @@ if requiredScript == "lib/managers/menumanager" then
 						end
 						if item:parameters().difficulty_num ~= difficulty_num then
 							item:parameters().difficulty_num = difficulty_num
+						end
+						if item:parameters().is_one_down ~= is_one_down then
+							item:parameters().is_one_down = is_one_down
 						end
 						if item:parameters().job_plan ~= job_plan then
 							item:parameters().job_plan = job_plan
@@ -330,6 +335,9 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 						end
 					end
 				end
+				if row_item.one_down_icon then
+					row_item.one_down_icon:set_color(tweak_data.screen_colors.pro_color)
+				end
 				row_item.gui_info_panel:set_visible(true)
 			end
 		end
@@ -360,6 +368,9 @@ elseif requiredScript == "lib/managers/menu/menunodegui" then
 							gui:set_color(tweak_data.screen_colors.risk)
 						end
 					end
+				end
+				if row_item.one_down_icon then
+					row_item.one_down_icon:set_color(tweak_data.screen_colors.one_down)
 				end
 				row_item.gui_info_panel:set_visible(false)
 			end
@@ -885,6 +896,18 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 					--num_stars = num_stars + 1
 					--skull:set_center_y(row_item.gui_columns[2]:center_y())
 				end
+				if row_item.item:parameters().is_one_down then
+					row_item.one_down_icon = row_item.gui_panel:bitmap({
+						texture = "guis/textures/pd2/cn_mini_onedown",
+						x = x,
+						y = y,
+						w = h,
+						h = h,
+						--blend_mode = "add",
+						layer = self.layers.items,
+						color = tweak_data.screen_colors.one_down,
+					})
+				end
 			end
 			
 			
@@ -1046,6 +1069,19 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				layer = 1
 			})
 			
+			row_item.one_down_text = row_item.gui_info_panel:text({
+				name = "one_down_text",
+				text = managers.localization:to_upper_text("menu_one_down"),
+				font = tweak_data.menu.pd2_small_font,
+				color = tweak_data.screen_colors.one_down,
+				font_size = font_size,
+				align = "left",
+				vertical = "center",
+				w = 256,
+				h = font_size,
+				layer = 1
+			})
+			
 			row_item.job_plan_text = row_item.gui_info_panel:text({
 				name = "job_plan_text",
 				text = managers.localization:to_upper_text(row_item.item:parameters().job_plan_name),
@@ -1168,8 +1204,14 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		row_item.days_text:set_position(math.round(row_item.days_text:x()), math.round(row_item.days_text:y()))
 		
 		row_item.difficulty_text:set_lefttop(self._difficulty_title:righttop())
-		row_item.difficulty_text:set_w(row_item.gui_info_panel:w())
+		local _, _, w, _ = row_item.difficulty_text:text_rect()
+		row_item.difficulty_text:set_w(w + 8)
 		row_item.difficulty_text:set_position(math.round(row_item.difficulty_text:x()), math.round(row_item.difficulty_text:y()))
+
+		row_item.one_down_text:set_lefttop(row_item.difficulty_text:righttop())
+		row_item.one_down_text:set_w(row_item.gui_info_panel:w())
+		row_item.one_down_text:set_position(math.round(row_item.one_down_text:x()), math.round(row_item.one_down_text:y()))
+		row_item.one_down_text:set_visible(row_item.item:parameters().is_one_down or false)
 		
 		row_item.job_plan_text:set_lefttop(self._job_plan_title:righttop())
 		row_item.job_plan_text:set_w(row_item.gui_info_panel:w())
@@ -1345,12 +1387,12 @@ elseif requiredScript == "lib/managers/menu/nodes/menunodeserverlist" then
 		})
 		self:_add_column({		-- level name
 			text = string.upper(""),
-			proportions = 1.7,
+			proportions = 1.6,
 			align = "right"
 		})
 		self:_add_column({		-- Difficulty, State name
 			text = string.upper(""),
-			proportions = 1.3,
+			proportions = 1.4,
 			align = "right"
 		})
 		self:_add_column({		-- Players/Total
