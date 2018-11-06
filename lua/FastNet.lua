@@ -290,7 +290,8 @@ if requiredScript == "lib/managers/menumanager" then
 		end
 		
 		table.sort(new_node:items(), function (a, b) 
-			local a_diff, b_diff 	= (a:parameters().is_crime_spree and a:parameters().crime_spree or a:parameters().difficulty_num or 2), (b:parameters().is_crime_spree and b:parameters().crime_spree or b:parameters().difficulty_num or 2)
+			local a_diff = (a:parameters().is_crime_spree and a:parameters().crime_spree or a:parameters().difficulty_num or 2) + (a:parameters().is_one_down and 0.5 or 0)
+			local b_diff = (b:parameters().is_crime_spree and b:parameters().crime_spree or b:parameters().difficulty_num or 2) + (b:parameters().is_one_down and 0.5 or 0)
 			local lower_difficulty 	= (a_diff < b_diff)
 			local equal_difficulty 	= (a_diff == b_diff)
 			local less_players 		= (a:parameters().num_plrs or 0) < (b:parameters().num_plrs or 0)
@@ -636,7 +637,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		self._safehouse_button = self._button_panel:text({
 			name = "safehouse_btn",
 			x = tweak_data.menu.info_padding + 22,
-			y = (tweak_data.menu.pd2_small_font_size + 4) * 1,
+			y = tweak_data.menu.info_padding,
 			h = tweak_data.menu.pd2_small_font_size + 2,
 			align = "left",
 			halign = "top",
@@ -650,7 +651,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		self._casino_button = self._button_panel:text({
 			name = "casino_btn",
 			x = tweak_data.menu.info_padding + 22,
-			y = (tweak_data.menu.pd2_small_font_size + 4) * 2,
+			y = self._safehouse_button:bottom() + 1,
 			h = tweak_data.menu.pd2_small_font_size + 2,
 			align = "left",
 			halign = "top",
@@ -664,7 +665,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		self._filter_button = self._button_panel:text({
 			name = "filter_btn",
 			x = tweak_data.menu.info_padding + 1,
-			y = (tweak_data.menu.pd2_small_font_size + 4) * 3,
+			y = self._casino_button:bottom() + 1,
 			h = tweak_data.menu.pd2_small_font_size + 2,
 			align = "left",
 			halign = "top",
@@ -678,7 +679,7 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		self._refresh_button = self._button_panel:text({
 			name = "refresh_btn",
 			x = tweak_data.menu.info_padding,
-			y = (tweak_data.menu.pd2_small_font_size + 4) * 4,
+			y = self._filter_button:bottom() + 1,
 			h = tweak_data.menu.pd2_small_font_size + 2,
 			align = "left",
 			halign = "top",
@@ -725,16 +726,37 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			self._crimespree_button:set_text(string.format("%s%s)", contine_text, level):upper())
 			self._crimespree_button:set_range_color(contine_text:len(), contine_text:len() + level:len() - 2, tweak_data.screen_colors.crime_spree_risk)
 		else
-			self._crimespree_button:set_text(managers.localization:text("cn_crime_spree_start"))
+			self._crimespree_button:set_text(managers.localization:text("cn_crime_spree_start"):upper())
 		end
 		local _, _, w, _ = self._crimespree_button:text_rect()
 		self._crimespree_button:set_w(w)
 		self._crimespree_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
+
+		self._holdout_button = self._button_panel:text({
+			name = "holdout_btn",
+			x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
+			y = self._crimespree_button:bottom() + 2,
+			w = 100,
+			h = tweak_data.menu.pd2_large_font_size - 14,
+			align = "right",
+			halign = "top",
+			vertical = "top",
+			font = tweak_data.menu.pd2_large_font,
+			font_size = tweak_data.menu.pd2_large_font_size - 14,
+			color = tweak_data.screen_colors.button_stage_3,
+			layer = self.layers.items,
+			text = managers.localization:text("menu_cn_skirmish"):upper(),
+			visible = managers.skirmish:is_unlocked(),
+		})
+		local _, _, w, _ = self._holdout_button:text_rect()
+		self._holdout_button:set_w(w)
+		self._holdout_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
+
 		if FastNet.settings.show_reconnect then
 			self._reconnect_button = self._button_panel:text({
 				name = "reconnect_btn",
-				x = self._button_panel:w()/ 2 + tweak_data.menu.info_padding,
-				y = (tweak_data.menu.pd2_small_font_size + 4) * 4,
+				x = tweak_data.menu.info_padding - 4,
+				y = self._refresh_button:bottom() + 1,
 				h = tweak_data.menu.pd2_small_font_size + 2,
 				align = "left",
 				halign = "top",
@@ -747,8 +769,8 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 			})
 			local _, _, w, _ = self._reconnect_button:text_rect()
 			self._reconnect_button:set_w(w+5)
-			self._reconnect_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
-			self._reconnect_button:set_y(self._refresh_button:y())
+			--self._reconnect_button:set_x(self._button_panel:w() - w - tweak_data.menu.info_padding)
+			--self._reconnect_button:set_y(self._refresh_button:y())
 
 		end
 		
@@ -1268,7 +1290,8 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 				FastNet:reconnect()
 				return true
 			elseif self._host_button:inside(x, y) then
-				managers.menu:open_node("crimenet_contract_special", {})
+				--managers.menu:open_node("crimenet_contract_special", {})
+				managers.menu:open_node("contract_broker", {})
 				managers.menu_component:disable_crimenet()
 				return true
 			elseif self._crimespree_button:visible() and self._crimespree_button:inside(x, y) then
@@ -1286,6 +1309,8 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 					}
 				}
 				managers.menu:open_node(node, data)
+			elseif self._holdout_button:visible() and self._holdout_button:inside(x, y) then
+				SkirmishLandingMenuComponent:open_node()
 			elseif self._safehouse_button:inside(x, y) then
 				managers.menu:open_node("custom_safehouse", {})
 				managers.menu_component:disable_crimenet()
@@ -1341,6 +1366,10 @@ elseif requiredScript == "lib/managers/menu/renderers/menunodetablegui" then
 		
 		if not over_button and self._crimespree_button:visible() and self._crimespree_button:inside(x, y) then
 			over_button = self._crimespree_button
+		end
+		
+		if not over_button and self._holdout_button:visible() and self._holdout_button:inside(x, y) then
+			over_button = self._holdout_button
 		end
 		
 		if not over_button and self._safehouse_button:inside(x, y) then
