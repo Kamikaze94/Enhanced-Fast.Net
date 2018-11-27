@@ -1,0 +1,14 @@
+{
+	"fast_net_title" : "Fast.net",
+	"fast_net_help" : "Connettiti a Fast.net e unisciti ad altri giocatori più velocemente della luce.",
+	"fast_net_friends_title" : "Amici su Fast.net",
+	"menu_button_reconnect" : "Riconnettiti",
+	"fastnet_settings_name" : "Impostazioni Fast.net",
+	"fastnet_settings_help" : "Configurazione di Fast.net",
+	"fastnet_friends_menu_title" : "Mostra 'Amici su Fast.net'",
+	"fastnet_friends_menu_desc" : "Mostra separatamente 'Amici di Fast.net' nel menu.",
+	"fastnet_show_reconnect_title" : "Mostra Riconnettiti",
+	"fastnet_show_reconnect_desc" : "Mostra il tasto Riconnettiti in Crime.net e Fast.net",
+	
+	"fastnet_mutators_tag" : "[MUTATORI]"
+}
